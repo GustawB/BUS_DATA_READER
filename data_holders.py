@@ -17,6 +17,16 @@ class ZTM_bus:
         self.brigade = brigade
         self.time = time
 
+    def __str__(self):
+        result = str([self.line, self.longitude, self.latitude, self.vehicle_number, self.brigade, self.time])
+        return result
+
     def to_csv(self):
         result = [self.line, self.longitude, self.latitude, self.vehicle_number, self.brigade, self.time]
         return result
+
+
+class Location:
+    longitude: float
+    latitude: float
+    Longitude_: float

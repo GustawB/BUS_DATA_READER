@@ -8,19 +8,15 @@ import requests
 
 
 class data_reader:
-    nr_of_samples: int
-    sample_length: int
     api_key: str
     read_data: dict
 
-    def __init__(self, nr_of_samples, sample_length, api_key):
-        self.nr_of_samples = nr_of_samples
-        self.sample_length = sample_length
+    def __init__(self, api_key):
         self.api_key = api_key
         self.read_data = {}
 
-    def get_bus_data(self):
-        for i in range(self.nr_of_samples):
+    def get_bus_data(self, nr_of_samples, sample_length):
+        for i in range(nr_of_samples):
             response = response = requests.post(
                 'https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= f2e5503e-' +
                 '927d-4ad3-9500-4ab9e55deb59&apikey=' + self.api_key + '&type=1')
@@ -34,9 +30,9 @@ class data_reader:
                 else:
                     self.read_data[helper['Lines']] = [bus]
 
-            time.sleep(self.sample_length)
+            time.sleep(sample_length)
 
-    def dump_data(self):
+    def dump_bus_data(self):
         data_headers = ['Lines', 'Longitude', 'Latitude', 'VehicleNumber', 'Brigade', 'Time']
         with open('bus_data.csv', 'w', newline='') as file:
             csv_writer = csv.writer(file)
