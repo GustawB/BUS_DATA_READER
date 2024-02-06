@@ -1,4 +1,3 @@
-import requests
 from data_reader import data_reader
 
 if __name__ == '__main__':
