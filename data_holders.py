@@ -16,3 +16,7 @@ class ZTM_bus:
         self.vehicle_number = vehicle_number
         self.brigade = brigade
         self.time = time
+
+    def to_csv(self):
+        result = [self.line, self.longitude, self.latitude, self.vehicle_number, self.brigade, self.time]
+        return result

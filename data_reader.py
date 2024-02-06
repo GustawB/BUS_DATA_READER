@@ -1,4 +1,6 @@
 import time
+import csv
+
 from datetime import datetime
 
 from data_holders import ZTM_bus
@@ -19,8 +21,9 @@ class data_reader:
 
     def get_bus_data(self):
         for i in range(self.nr_of_samples):
-            response = response = requests.post('https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= f2e5503e-' +
-                                                '927d-4ad3-9500-4ab9e55deb59&apikey=' + self.api_key + '&type=1')
+            response = response = requests.post(
+                'https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= f2e5503e-' +
+                '927d-4ad3-9500-4ab9e55deb59&apikey=' + self.api_key + '&type=1')
             for j in range(len(response.json()['result'])):
                 helper = response.json()['result'][j]
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
@@ -32,3 +35,14 @@ class data_reader:
                     self.read_data[helper['Lines']] = [bus]
 
             time.sleep(self.sample_length)
+
+    def dump_data(self):
+        data_headers = ['Lines', 'Longitude', 'Latitude', 'VehicleNumber', 'Brigade', 'Time']
+        with open('bus_data.csv', 'w', newline='') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for key in self.read_data:
+                for value in self.read_data[key]:
+                    csv_writer.writerow(value.to_csv())
+
+        self.read_data.clear()
