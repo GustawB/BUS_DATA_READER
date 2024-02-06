@@ -9,11 +9,13 @@ import requests
 
 class data_reader:
     api_key: str
-    read_data: dict
+    bus_data: dict
+    busstop_data: dict
 
     def __init__(self, api_key):
         self.api_key = api_key
-        self.read_data = {}
+        self.bus_data = {}
+        self.busstop_data = {}
 
     def get_bus_data(self, nr_of_samples, sample_length):
         for i in range(nr_of_samples):
@@ -25,10 +27,10 @@ class data_reader:
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                               helper['Brigade'], datetime.strptime(helper['Time'], "%Y-%m-%d %H:%M:%S"))
 
-                if helper['Lines'] in self.read_data:
-                    self.read_data[helper['Lines']].append(bus)
+                if helper['Lines'] in self.bus_data:
+                    self.bus_data[helper['Lines']].append(bus)
                 else:
-                    self.read_data[helper['Lines']] = [bus]
+                    self.bus_data[helper['Lines']] = [bus]
 
             time.sleep(sample_length)
 
@@ -37,8 +39,13 @@ class data_reader:
         with open('bus_data.csv', 'w', newline='') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
-            for key in self.read_data:
-                for value in self.read_data[key]:
+            for key in self.bus_data:
+                for value in self.bus_data[key]:
                     csv_writer.writerow(value.to_csv())
 
-        self.read_data.clear()
+        self.bus_data.clear()
+
+
+    def get_stops_data(self):
+        response = response = requests.post('https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
+        print(response.json())
