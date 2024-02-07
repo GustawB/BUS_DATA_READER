@@ -3,7 +3,7 @@ import csv
 
 from datetime import datetime
 
-from data_holders import ZTM_bus, bus_stop, bus_for_stop
+from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry
 import requests
 
 
@@ -12,12 +12,30 @@ class data_reader:
     bus_data: dict
     bus_stop_data: dict
     busses_for_stops: dict
+    schedules: dict
 
     def __init__(self, api_key):
         self.api_key = api_key
         self.bus_data = {}
         self.bus_stop_data = {}
         self.busses_for_stops = {}
+        self.schedules = {}
+
+    def time_parser(self, time_data):
+        if time_data[:2] == '24':
+            time_data = '00' + time_data[2:]
+        elif time_data[:2] == '25':
+            time_data = '01' + time_data[2:]
+        elif time_data[:2] == '26':
+            time_data = '02' + time_data[2:]
+        elif time_data[:2] == '27':
+            time_data = '03' + time_data[2:]
+        elif time_data[:2] == '28':
+            time_data = '04' + time_data[2:]
+        elif time_data[:2] == '29':
+            time_data = '05' + time_data[2:]
+
+        return time_data
 
     def get_bus_data(self, nr_of_samples, sample_length):
         for i in range(nr_of_samples):
@@ -26,8 +44,9 @@ class data_reader:
                 '927d-4ad3-9500-4ab9e55deb59&apikey=' + self.api_key + '&type=1')
             for j in range(len(response.json()['result'])):
                 helper = response.json()['result'][j]
+                time_data = self.time_parser(helper['Time'])
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
-                              helper['Brigade'], datetime.strptime(helper['Time'], "%Y-%m-%d %H:%M:%S"))
+                              helper['Brigade'], datetime.strptime(time_data, "%Y-%m-%d %H:%M:%S"))
 
                 if helper['Lines'] in self.bus_data:
                     self.bus_data[helper['Lines']].append(bus)
@@ -98,3 +117,45 @@ class data_reader:
             for key in self.busses_for_stops:
                 for data in self.busses_for_stops[key]:
                     csv_writer.writerow(data.to_csv())
+
+    def get_bus_schedules(self, busses_for_stops_file):
+        with open(busses_for_stops_file, 'r', encoding='utf16') as file:
+            csv_reader = csv.reader(file)
+            nr_of_lines = 0
+            for line in csv_reader:
+                nr_of_lines = nr_of_lines + 1
+                if nr_of_lines > 1 and len(line) == 3:
+                    #print(line)
+                    response = requests.post(
+                        'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e-60518c9f3238&busstopId=' +
+                        line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.api_key)
+                    #print(response.json()['result'])
+                    for data in response.json()['result']:
+                        #print(data['values'])
+                        time_data = self.time_parser(data['values'][5]['value'])
+                        scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
+                                                 data['values'][4]['value'],
+                                                 datetime.strptime(time_data, "%H:%M:%S"))
+                    if line[0] in self.schedules:
+                        if line[1] in self.schedules[line[0]]:
+                            if line[2] in self.schedules[line[0]][line[1]]:
+                                self.schedules[line[0]][line[1]][line[2]].append(scl)
+                            else:
+                                self.schedules[line[0]][line[1]][line[2]] = [scl]
+                        else:
+                            self.schedules[line[0]][line[1]] = {line[2]: [scl]}
+                    else:
+                        self.schedules[line[0]] = {line[1]: {line[2]: [scl]}}
+
+    def dump_schedules(self):
+        data_headers = ['Brigade', 'Direction', 'Route', 'Time']
+        for team in self.schedules:
+            for post in self.schedules[team]:
+                for bus in self.schedules[team][post]:
+                    with open('schedules/' + team + '_' + post + '_' + bus + '.csv', 'w',
+                              newline='', encoding='utf16') as file:
+                        csv_writer = csv.writer(file)
+                        csv_writer.writerow(data_headers)
+                        for data in self.schedules[team][post][bus]:
+                            csv_writer.writerow(data.to_csv())
+
