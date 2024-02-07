@@ -43,6 +43,21 @@ class bus_stop:
         result = [self.team_name, self.street_id, self.team, self.post, self.direction, self.longitude, self.latitude]
         return result
 
+class bus_for_stop:
+    team: str
+    post: str
+    bus: str
+
+    def __init__(self, team, post, bus):
+        self.team = team
+        self.post = post
+        self.bus = bus
+
+    def to_csv(self):
+        result = [self.team, self.post, self.bus]
+        return result
+
+
 class Location:
     longitude: float
     latitude: float

@@ -21,7 +21,10 @@ if __name__ == '__main__':
     #print(' ')
     #print(da.calc_nr_of_overspeeding_busses(1))
 
-    dt.get_stops_data()
-    dt.dump_stops_data('bus_stop_data.csv')
+    #dt.get_stops_data()
+    #dt.dump_stops_data('bus_stop_data.csv')
+
+    #dt.get_busses_for_stops('bus_stop_data.csv')
+    dt.dump_busses_for_stops('bus_for_stops2.csv')
 
 

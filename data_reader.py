@@ -3,7 +3,7 @@ import csv
 
 from datetime import datetime
 
-from data_holders import ZTM_bus, bus_stop
+from data_holders import ZTM_bus, bus_stop, bus_for_stop
 import requests
 
 
@@ -11,11 +11,13 @@ class data_reader:
     api_key: str
     bus_data: dict
     bus_stop_data: dict
+    busses_for_stops: dict
 
     def __init__(self, api_key):
         self.api_key = api_key
         self.bus_data = {}
         self.bus_stop_data = {}
+        self.busses_for_stops = {}
 
     def get_bus_data(self, nr_of_samples, sample_length):
         for i in range(nr_of_samples):
@@ -46,7 +48,7 @@ class data_reader:
         self.bus_data.clear()
 
     def get_stops_data(self):
-        response = response = requests.post(
+        response = requests.post(
             'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
         for data in response.json()['result']:
             bs = bus_stop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
@@ -68,3 +70,31 @@ class data_reader:
             for key in self.bus_stop_data:
                 for value in self.bus_stop_data[key]:
                     csv_writer.writerow(value.to_csv())
+
+    def get_busses_for_stops(self, bus_stop_list_file):
+        with open(bus_stop_list_file, 'r', encoding='utf16') as file:
+            csv_reader = csv.reader(file)
+            nr_of_lines = 0
+            for line in csv_reader:
+                nr_of_lines = nr_of_lines + 1
+                if nr_of_lines > 1 and line[2] != 'null' and line[3] != 'null':
+                    response = requests.post(
+                        'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=88cd555f-6f31-43ca-9de4-66c479ad5942&busstopId=' +
+                        line[2] + '&busstopNr=' + line[3] + '&apikey=' + self.api_key)
+                    for data in response.json()['result']:
+                        bus = bus_for_stop(line[2], line[3], data['values'][0]['value'])
+                        if len(bus.bus) == 3:
+                            if bus.team in self.busses_for_stops:
+                                self.busses_for_stops[bus.team].append(bus)
+                            else:
+                                self.busses_for_stops[bus.team] = [bus]
+
+    def dump_busses_for_stops(self, file_to_dump):
+        data_headers = ['Team', 'Post', 'Bus']
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            csv_writer.writerow(data_headers)
+            for key in self.busses_for_stops:
+                for data in self.busses_for_stops[key]:
+                    csv_writer.writerow(data.to_csv())
