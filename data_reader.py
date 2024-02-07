@@ -3,19 +3,19 @@ import csv
 
 from datetime import datetime
 
-from data_holders import ZTM_bus
+from data_holders import ZTM_bus, bus_stop
 import requests
 
 
 class data_reader:
     api_key: str
     bus_data: dict
-    busstop_data: dict
+    bus_stop_data: dict
 
     def __init__(self, api_key):
         self.api_key = api_key
         self.bus_data = {}
-        self.busstop_data = {}
+        self.bus_stop_data = {}
 
     def get_bus_data(self, nr_of_samples, sample_length):
         for i in range(nr_of_samples):
@@ -34,9 +34,9 @@ class data_reader:
 
             time.sleep(sample_length)
 
-    def dump_bus_data(self):
+    def dump_bus_data(self, file_to_dump):
         data_headers = ['Lines', 'Longitude', 'Latitude', 'VehicleNumber', 'Brigade', 'Time']
-        with open('bus_data.csv', 'w', newline='') as file:
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for key in self.bus_data:
@@ -45,7 +45,26 @@ class data_reader:
 
         self.bus_data.clear()
 
-
     def get_stops_data(self):
-        response = response = requests.post('https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
-        print(response.json())
+        response = response = requests.post(
+            'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
+        for data in response.json()['result']:
+            bs = bus_stop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
+                          data['values'][1]['value'], data['values'][6]['value'],
+                          float(data['values'][5]['value']), float(data['values'][4]['value']))
+
+            if bs.team_name in self.bus_stop_data:
+                self.bus_stop_data[bs.team_name].append(bs)
+            else:
+                self.bus_stop_data[bs.team_name] = [bs]
+
+            print(data['values'])
+
+    def dump_stops_data(self, file_to_dump):
+        data_headers = ['Team_name', 'Street_id', 'Team', 'Post', 'Direction', 'Longitude', 'Latitude']
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for key in self.bus_stop_data:
+                for value in self.bus_stop_data[key]:
+                    csv_writer.writerow(value.to_csv())

@@ -22,18 +22,26 @@ class ZTM_bus:
         return result
 
 class bus_stop:
-    name: str
+    team_name: str
+    street_id: str
     team: str
     post: str
+    direction: str
     longitude: float
     latitude: float
 
-    def __init__(self, name, team, post, longitude, latitude):
-        self.name = name
+    def __init__(self, team_name, street_id, team, post, direction, longitude, latitude):
+        self.team_name = team_name
+        self.street_id = street_id
         self.team = team
         self.post = post
+        self.direction = direction
         self.longitude = longitude
         self.latitude = latitude
+
+    def to_csv(self):
+        result = [self.team_name, self.street_id, self.team, self.post, self.direction, self.longitude, self.latitude]
+        return result
 
 class Location:
     longitude: float
