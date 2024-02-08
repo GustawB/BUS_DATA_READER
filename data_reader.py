@@ -1,5 +1,6 @@
 import time
 import csv
+import os
 
 from datetime import datetime
 
@@ -127,13 +128,11 @@ class data_reader:
             for line in csv_reader:
                 nr_of_lines = nr_of_lines + 1
                 if nr_of_lines > 1 and len(line) == 3:
-                    #print(line)
                     response = requests.post(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e-60518c9f3238&busstopId=' +
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.api_key)
-                    #print(response.json()['result'])
+                    print(response.json())
                     for data in response.json()['result']:
-                        #print(data['values'])
                         time_data = self.time_parser(data['values'][5]['value'])
                         scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
                                                  data['values'][4]['value'],
@@ -151,6 +150,8 @@ class data_reader:
 
     def dump_schedules(self):
         data_headers = ['Brigade', 'Direction', 'Route', 'Time']
+        if not os.path.isdir('schedules'):
+            os.mkdir('schedules')
         for team in self.schedules:
             for post in self.schedules[team]:
                 for bus in self.schedules[team][post]:

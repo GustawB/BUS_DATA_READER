@@ -1,5 +1,6 @@
 import geopy
 import requests
+import os
 
 from data_analyzer import data_analyzer
 from data_reader import data_reader
@@ -11,12 +12,12 @@ if __name__ == '__main__':
     #dt.get_bus_data(2, 1)
     #dt.dump_bus_data('bus_data.csv')
 
-    da = data_analyzer()
-    da.read_bus_data('bus_data.csv')
-    print(da.calc_nr_of_overspeeding_busses(1))
-    da.calc_data_for_overspeed_percentages(1)
-    da.calc_overspeed_percentages()
-    print(da.overspeed_percentages)
+    #da = data_analyzer()
+    #da.read_bus_data('bus_data.csv')
+    #print(da.calc_nr_of_overspeeding_busses(1))
+    #da.calc_data_for_overspeed_percentages(1)
+    #da.calc_overspeed_percentages()
+    #print(da.overspeed_percentages)
 
     #dt.get_stops_data()
     #dt.dump_stops_data('bus_stop_data.csv')
