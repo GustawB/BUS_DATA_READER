@@ -90,11 +90,10 @@ class Location:
         coords1 = (self.latitude, self.longitude)
         coords2 = (other.latitude, other.longitude)
         dist = geopy.distance.geodesic(coords1, coords2).m
-        if dist < 100 :
+        if dist <= 200:
             return True
         else:
             return False
 
     def __ne__(self, other):
         return not (self == other)
-

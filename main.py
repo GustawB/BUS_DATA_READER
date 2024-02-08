@@ -25,8 +25,9 @@ if __name__ == '__main__':
     #dt.dump_stops_data('bus_stop_data.csv')
 
     dt.get_busses_for_stops('bus_stop_data.csv')
+    dt.dump_busses_for_stops('bus_for_stops.csv')
 
-    dt.get_bus_schedules('bus_for_stops.csv')
-    dt.dump_schedules()
+    #dt.get_bus_schedules('bus_for_stops.csv')
+    #dt.dump_schedules()
 
 
