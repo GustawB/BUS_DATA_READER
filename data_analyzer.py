@@ -34,6 +34,14 @@ class data_analyzer:
                     else:
                         self.bus_data[row[0]] = {row[4]: [bus]}
 
+    def normalise_avg_speed(self, sample_length, dist):
+        local_length = sample_length
+        speed = dist / local_length * 3600 / 1000
+        while speed > 100:
+            local_length += 1
+            speed = dist / local_length * 3600 / 1000
+        return speed
+
     def calc_nr_of_overspeeding_busses(self, sample_length):
         nr_of_busses_overspeeding = 0
         for bus_line in self.bus_data:
@@ -41,7 +49,8 @@ class data_analyzer:
                 nr_of_overspeeds = 0
                 for i in range(len(self.bus_data[bus_line][bus]) - 1):
                     dist = self.bus_data[bus_line][bus][i + 1].location.distance(self.bus_data[bus_line][bus][i].location)
-                    speed = dist / sample_length * 3600 / 1000
+                    speed = self.normalise_avg_speed(sample_length, dist)
+                    print(speed)
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
 
@@ -73,7 +82,7 @@ class data_analyzer:
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
                         self.bus_data[bus_nr][vehicle_nr][i].location)
-                    speed = dist / sample_length * 3600 / 1000
+                    speed = self.normalise_avg_speed(sample_length, dist)
                     if speed <= 50:
                         self.points_with_no_overspeeds(self.bus_data[bus_nr][vehicle_nr][i + 1])
                     else:

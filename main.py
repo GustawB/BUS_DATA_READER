@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     da = data_analyzer()
     da.read_bus_data('bus_data.csv')
-    #print(da.calc_nr_of_overspeeding_busses(1))
+    print(da.calc_nr_of_overspeeding_busses(1))
     da.calc_data_for_overspeed_percentages(1)
     da.calc_overspeed_percentages()
     print(da.overspeed_percentages)
