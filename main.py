@@ -5,8 +5,8 @@ from data_reader import data_reader
 
 if __name__ == '__main__':
     dt = data_reader('afd497b5-83e7-4ecf-8c98-cd1805aa16c9')
-    #dt.get_bus_data(2, 1)
-    #dt.dump_bus_data()
+    dt.get_bus_data(2, 1)
+    dt.dump_bus_data()
 
     da = data_analyzer()
     da.read_bus_data('bus_data.csv')
