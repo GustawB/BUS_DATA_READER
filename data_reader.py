@@ -3,7 +3,7 @@ import csv
 
 from datetime import datetime
 
-from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry
+from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, street_holder
 import requests
 
 
@@ -13,6 +13,7 @@ class data_reader:
     bus_stop_data: dict
     busses_for_stops: dict
     schedules: dict
+    streets: dict
 
     def __init__(self, api_key):
         self.api_key = api_key
@@ -20,6 +21,7 @@ class data_reader:
         self.bus_stop_data = {}
         self.busses_for_stops = {}
         self.schedules = {}
+        self.streets = {}
 
     def time_parser(self, time_data):
         if time_data[:2] == '24':
@@ -43,7 +45,8 @@ class data_reader:
                 'https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= f2e5503e-' +
                 '927d-4ad3-9500-4ab9e55deb59&apikey=' + self.api_key + '&type=1')
             for j in range(len(response.json()['result'])):
-                helper = response.json()['result'][j]
+                helper = (response.json()['result'][j])
+                #print(response.json()['result'])
                 time_data = self.time_parser(helper['Time'])
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                               helper['Brigade'], datetime.strptime(time_data, "%Y-%m-%d %H:%M:%S"))
@@ -56,15 +59,14 @@ class data_reader:
             time.sleep(sample_length)
 
     def dump_bus_data(self, file_to_dump):
-        data_headers = ['Lines', 'Longitude', 'Latitude', 'VehicleNumber', 'Brigade', 'Time']
+        data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for key in self.bus_data:
                 for value in self.bus_data[key]:
+                    value.location.find_street()
                     csv_writer.writerow(value.to_csv())
-
-        self.bus_data.clear()
 
     def get_stops_data(self):
         response = requests.post(
@@ -136,16 +138,16 @@ class data_reader:
                         scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
                                                  data['values'][4]['value'],
                                                  datetime.strptime(time_data, "%H:%M:%S"))
-                    if line[0] in self.schedules:
-                        if line[1] in self.schedules[line[0]]:
-                            if line[2] in self.schedules[line[0]][line[1]]:
-                                self.schedules[line[0]][line[1]][line[2]].append(scl)
+                        if line[0] in self.schedules:
+                            if line[1] in self.schedules[line[0]]:
+                                if line[2] in self.schedules[line[0]][line[1]]:
+                                    self.schedules[line[0]][line[1]][line[2]].append(scl)
+                                else:
+                                    self.schedules[line[0]][line[1]][line[2]] = [scl]
                             else:
-                                self.schedules[line[0]][line[1]][line[2]] = [scl]
+                                self.schedules[line[0]][line[1]] = {line[2]: [scl]}
                         else:
-                            self.schedules[line[0]][line[1]] = {line[2]: [scl]}
-                    else:
-                        self.schedules[line[0]] = {line[1]: {line[2]: [scl]}}
+                            self.schedules[line[0]] = {line[1]: {line[2]: [scl]}}
 
     def dump_schedules(self):
         data_headers = ['Brigade', 'Direction', 'Route', 'Time']
@@ -158,4 +160,24 @@ class data_reader:
                         csv_writer.writerow(data_headers)
                         for data in self.schedules[team][post][bus]:
                             csv_writer.writerow(data.to_csv())
+
+    def get_streets(self):
+        response = requests.post('https://api.um.warszawa.pl/api/action/wfsstore_get/?id=8c05e43a-504d-4680-bb75-e240858aad5c&apikey=' + self.api_key)
+        #print(response.json()['result']['featureMemberList'][1])
+        for data in response.json()['result']['featureMemberList']:
+            for loc in data['geometry']['coordinates']:
+                street_data = street_holder(data['properties'][2]['value'], loc['longitude'], loc['latitude'])
+                if street_data.street_name in self.streets:
+                    self.streets[street_data.street_name].append(street_data)
+                else:
+                    self.streets[street_data.street_name] = [street_data]
+
+    def dump_streets(self, file_to_dump):
+        data_headers = ['Street_name', 'Longitude', 'Latitude']
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for key in self.streets:
+                for data in self.streets[key]:
+                    csv_writer.writerow(data.to_csv())
 
