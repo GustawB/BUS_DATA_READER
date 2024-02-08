@@ -29,5 +29,10 @@ if __name__ == '__main__':
 
     #dt.get_bus_schedules('bus_for_stops.csv')
     #dt.dump_schedules()
+    da.calc_data_for_overspeed_percentages(1)
+    da.calc_overspeed_percentages()
+    print(da.overspeed_percentages)
+
+
 
 

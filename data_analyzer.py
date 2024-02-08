@@ -24,7 +24,7 @@ class data_analyzer:
             for row in reader:
                 nr_of_lines = nr_of_lines + 1
                 if nr_of_lines > 1:
-                    bus = ZTM_bus(row[0], row[1], row[2], row[3], row[4],
+                    bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[3], row[4],
                                   datetime.strptime(row[5], "%Y-%m-%d %H:%M:%S"))
                     if row[0] in self.bus_data:
                         if row[3] in self.bus_data[row[0]]:
@@ -108,8 +108,11 @@ class data_analyzer:
             coords3 = (coords3[0] + difference_x, coords3[1] + difference_y)
 
     def calc_data_for_overspeed_percentages(self, sample_length):
+        number = 0
         for bus_nr in self.bus_data:
             for vehicle_nr in self.bus_data[bus_nr]:
+                number += 1
+                print('Starting calc data for bus: ' + str(number))
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     coords1 = (
                         self.bus_data[bus_nr][vehicle_nr][i].latitude, self.bus_data[bus_nr][vehicle_nr][i].longitude)
