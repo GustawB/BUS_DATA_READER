@@ -1,4 +1,5 @@
 import time
+import geopy.distance
 
 
 class ZTM_bus:
@@ -21,21 +22,78 @@ class ZTM_bus:
         result = [self.line, self.longitude, self.latitude, self.vehicle_number, self.brigade, self.time]
         return result
 
+
 class bus_stop:
-    name: str
+    team_name: str
+    street_id: str
     team: str
     post: str
+    direction: str
     longitude: float
     latitude: float
 
-    def __init__(self, name, team, post, longitude, latitude):
-        self.name = name
+    def __init__(self, team_name, street_id, team, post, direction, longitude, latitude):
+        self.team_name = team_name
+        self.street_id = street_id
         self.team = team
         self.post = post
+        self.direction = direction
         self.longitude = longitude
         self.latitude = latitude
+
+    def to_csv(self):
+        result = [self.team_name, self.street_id, self.team, self.post, self.direction, self.longitude, self.latitude]
+        return result
+
+
+class bus_for_stop:
+    team: str
+    post: str
+    bus: str
+
+    def __init__(self, team, post, bus):
+        self.team = team
+        self.post = post
+        self.bus = bus
+
+    def to_csv(self):
+        result = [self.team, self.post, self.bus]
+        return result
+
+
+class bus_schedule_entry:
+    brigade: str
+    direction: str
+    route: str
+    time: time.struct_time
+
+    def __init__(self, brigade, direction, route, time):
+        self.brigade = brigade
+        self.direction = direction
+        self.route = route
+        self.time = time
+
+    def to_csv(self):
+        result = [self.brigade, self.direction, self.route, self.time]
+        return result
+
 
 class Location:
     longitude: float
     latitude: float
-    Longitude_: float
+
+    def __init__(self, longitude, latitude):
+        self.longitude = longitude
+        self.latitude = latitude
+
+    def __eq__(self, other):
+        coords1 = (self.latitude, self.longitude)
+        coords2 = (other.latitude, other.longitude)
+        dist = geopy.distance.geodesic(coords1, coords2).m
+        if dist <= 200:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not (self == other)

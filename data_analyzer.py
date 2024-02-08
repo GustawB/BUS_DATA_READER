@@ -28,6 +28,11 @@ class data_analyzer:
                     else:
                         self.bus_data[row[0]] = {row[3]: [bus]}
 
+    def calc_average_speed(self, coords1, coords2, sample_length):
+        dist = geopy.distance.geodesic(coords1, coords2).m
+        speed = dist / sample_length * 3600 / 1000
+        return speed
+
     def calc_nr_of_overspeeding_busses(self, sample_length):
         nr_of_busses_overspeeding = 0
         for bus_line in self.bus_data:
@@ -37,7 +42,7 @@ class data_analyzer:
                     coords1 = (self.bus_data[bus_line][bus][i].latitude, self.bus_data[bus_line][bus][i].longitude)
                     coords2 = (self.bus_data[bus_line][bus][i + 1].latitude, self.bus_data[bus_line][bus][i + 1].longitude)
                     dist = geopy.distance.geodesic(coords1, coords2).m
-                    speed = dist / sample_length * 3600 / 1000
+                    speed = self.calc_average_speed(coords1, coords2, sample_length)
                     print(str(dist) + " " + str(speed))
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
@@ -46,3 +51,20 @@ class data_analyzer:
                     nr_of_busses_overspeeding = nr_of_busses_overspeeding + 1
 
         return nr_of_busses_overspeeding
+
+    def find_all_equal_points_on_route(self, coords1, coords2):
+        difference_x = abs(coords1[0] - coords2[0])
+        difference_y = abs(coords1[1] - coords2[1])
+
+
+
+
+    def point_with_many_overspeeds(self, sample_length):
+        for bus_nr in self.bus_data:
+            for vehicle_nr in self.bus_data[bus_nr]:
+                for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
+                    coords1 = (self.bus_data[bus_nr][vehicle_nr][i].latitude, self.bus_data[bus_nr][vehicle_nr][i].longitude)
+                    coords2 = (self.bus_data[bus_nr][vehicle_nr][i+1].latitude, self.bus_data[bus_nr][vehicle_nr][i+1].longitude)
+                    speed = self.calc_average_speed(coords1, coords2, sample_length)
+                    if speed > 50.0:
+
