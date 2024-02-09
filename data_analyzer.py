@@ -63,7 +63,12 @@ class data_analyzer:
             for row in reader:
                 nr_of_lines += 1
                 if nr_of_lines > 1:
-                    bre = bus_route_entry(row[0], row[1], row[2], row[3])
+                    bre = bus_route_entry(row[0], row[1], row[2], row[3], row[4])
+                    if row[1] not in self.bus_routes_data:
+                        self.bus_routes_data[row[1]] = {}
+                    if row[2] not in self.bus_routes_data[row[1]]:
+                        self.bus_routes_data[row[1]][row[2]] ={}
+                    self.bus_routes_data[row[1]][row[2]][row[0]] = bre
 
 
 

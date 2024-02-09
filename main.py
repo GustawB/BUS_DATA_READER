@@ -12,7 +12,7 @@ if __name__ == '__main__':
     #dt.get_bus_data(2, 1)
     #dt.dump_bus_data('bus_data.csv')
     dt.get_bus_routes()
-    dt.dump_bus_routes('bus_routes_data')
+    dt.dump_bus_routes('bus_routes_data.csv')
 
     da = data_analyzer()
     #da.read_bus_data('bus_data.csv')
