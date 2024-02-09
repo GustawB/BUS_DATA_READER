@@ -52,9 +52,9 @@ class data_analyzer:
                     bs = bus_stop(row[0], row[1], row[2], row[3], row[4], float(row[5]), float(row[6]))
                     if bs.street_id not in self.bus_stop_data:
                         self.bus_stop_data[bs.street_id] = {}
-                    if bs.team not in self.bus_stop_data[bs.street_id]:
-                        self.bus_stop_data[bs.street_id][bs.team] = []
-                    self.bus_stop_data[bs.street_id][bs.team].append(bs)
+                    if bs.post not in self.bus_stop_data[bs.street_id]:
+                        self.bus_stop_data[bs.street_id][bs.post] = []
+                    self.bus_stop_data[bs.street_id][bs.post].append(bs)
 
     def read_bus_routes_data(self, bus_routes_filename):
         with open(bus_routes_filename, 'r', encoding='utf16') as file:
@@ -131,15 +131,29 @@ class data_analyzer:
             self.overspeed_percentages[key] = (float(self.points_of_overspeed[key]) /
                                                float(self.nr_of_all_busses_for_ovespeed_points[key]))
 
+    def calc_time_difference(self, bus, bs_data, route_code):
+        min_diff
+        with open('schedules/' + bs_data.team + '_' + bs_data.post + '_' + bus.line) as file:
+            csv_reader = csv.reader(file)
+            for row in csv_reader:
+                if row[2] == route_code:
+
+
     def bus_stops_in_one_sample(self, loc_a, loc_b, bus):
         diff_x = loc_b.longitude - loc_a.longitude
         diff_y = loc_b.latitude - loc_a.latitude
         diff_x /= 8
         diff_y /= 8
         loc_c = Location(loc_a.longitude, loc_a.latitude)
-        #for i in range(9):
-            #for bus_nr in self.bus_routes_data:
-                #for street_id in self.bus_routes_data[bus_nr]:
+
+        for i in range(9):
+            for route_code in self.bus_routes_data[bus.line]:
+                for bre in self.bus_routes_data[bus.line][route_code]:
+                    for bs_data in self.bus_stop_data[bre.street_id][bre.bus_stop_nr]:
+                        if loc_c == bs_data.data.location:
+
+
+
 
 
 
