@@ -2,20 +2,26 @@ import csv
 from datetime import datetime
 import geopy.distance
 
-from data_holders import ZTM_bus, Location
+from data_holders import ZTM_bus, Location, bus_route_entry, bus_stop
 
 
 class data_analyzer:
     bus_data = dict
+    bus_stop_data: dict
     points_of_overspeed: dict
     nr_of_all_busses_for_ovespeed_points: dict
     overspeed_percentages: dict
+    times_for_stops: dict
+    nr_of_busses_for_stops: dict
 
     def __init__(self):
+        self.bus_data = {}
         self.bus_data = {}
         self.points_of_overspeed = {}
         self.nr_of_all_busses_for_ovespeed_points = {}
         self.overspeed_percentages = {}
+        self.times_for_stops = {}
+        self.nr_of_busses_for_stops = {}
 
     def read_bus_data(self, bus_filename):
         with open(bus_filename, 'r', encoding='utf16') as file:
@@ -33,6 +39,15 @@ class data_analyzer:
                             self.bus_data[row[0]][row[4]] = [bus]
                     else:
                         self.bus_data[row[0]] = {row[4]: [bus]}
+
+    def read_bus_Stop_data(self, bus_stop_filename):
+        with open(bus_stop_filename, 'r', encoding='utf16') as file:
+            reader = csv.reader(file)
+            nr_of_lines = 0
+            for row in reader:
+                nr_of_lines += 1
+                if nr_of_lines > 1:
+                    bs = bus_stop(row[0], row[1], row[2], row[3], row[4], float(row[5]), float(row[6]))
 
     def normalise_avg_speed(self, sample_length, dist):
         local_length = sample_length
@@ -92,3 +107,10 @@ class data_analyzer:
         for key in self.points_of_overspeed:
             self.overspeed_percentages[key] = (float(self.points_of_overspeed[key]) /
                                                float(self.nr_of_all_busses_for_ovespeed_points[key]))
+
+    def calc_times_for_stops(self):
+        for bus_nr in self.bus_data:
+            for vehicle_nr in self.bus_data[bus_nr]:
+                for bus_data in self.bus_data[bus_nr][vehicle_nr]:
+                    print(bus_data.to_csv())
+

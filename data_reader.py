@@ -4,7 +4,7 @@ import os
 
 from datetime import datetime
 
-from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, street_holder
+from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, street_holder, bus_route_entry
 import requests
 
 
@@ -15,6 +15,7 @@ class data_reader:
     busses_for_stops: dict
     schedules: dict
     streets: dict
+    bus_routes: dict
 
     def __init__(self, api_key):
         self.api_key = api_key
@@ -23,6 +24,7 @@ class data_reader:
         self.busses_for_stops = {}
         self.schedules = {}
         self.streets = {}
+        self.bus_routes = {}
 
     def time_parser(self, time_data):
         if time_data[:2] == '24':
@@ -47,7 +49,7 @@ class data_reader:
                 '927d-4ad3-9500-4ab9e55deb59&apikey=' + self.api_key + '&type=1')
             for j in range(len(response.json()['result'])):
                 helper = (response.json()['result'][j])
-                #print(response.json()['result'])
+                # print(response.json()['result'])
                 time_data = self.time_parser(helper['Time'])
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                               helper['Brigade'], datetime.strptime(time_data, "%Y-%m-%d %H:%M:%S"))
@@ -163,8 +165,9 @@ class data_reader:
                             csv_writer.writerow(data.to_csv())
 
     def get_streets(self):
-        response = requests.post('https://api.um.warszawa.pl/api/action/wfsstore_get/?id=8c05e43a-504d-4680-bb75-e240858aad5c&apikey=' + self.api_key)
-        #print(response.json()['result']['featureMemberList'][1])
+        response = requests.post(
+            'https://api.um.warszawa.pl/api/action/wfsstore_get/?id=8c05e43a-504d-4680-bb75-e240858aad5c&apikey=' + self.api_key)
+        # print(response.json()['result']['featureMemberList'][1])
         for data in response.json()['result']['featureMemberList']:
             for loc in data['geometry']['coordinates']:
                 street_data = street_holder(data['properties'][2]['value'], loc['longitude'], loc['latitude'])
@@ -181,4 +184,37 @@ class data_reader:
             for key in self.streets:
                 for data in self.streets[key]:
                     csv_writer.writerow(data.to_csv())
+
+    def get_bus_routes(self):
+        response = requests.post(
+            'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.api_key)
+        for bus_nr in response.json()['result']:
+            for route_type in response.json()['result'][bus_nr]:
+                max_nr = 0
+                #print(response.json()['result'][bus_nr][route_type])
+                for nr in response.json()['result'][bus_nr][route_type]:
+                    #print(nr)
+                    if int(nr) > max_nr:
+                        max_nr = int(nr)
+                #print(max_nr)
+                if bus_nr not in self.bus_routes:
+                    self.bus_routes[bus_nr] = {}
+                self.bus_routes[bus_nr][route_type] = {}
+                for i in range(max_nr):
+                    self.bus_routes[bus_nr][route_type][i + 1] = None
+                for nr in response.json()['result'][bus_nr][route_type]:
+                    helper = response.json()['result'][bus_nr][route_type][nr]
+                    self.bus_routes[bus_nr][route_type][int(nr)] = (
+                        bus_route_entry(helper['ulica_id'], helper['nr_zespolu'], helper['typ'], helper['nr_przystanku']))
+
+    def dump_bus_routes(self, file_to_dump):
+        data_headers = ['Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for bus_nr in self.bus_routes:
+                for route_type in self.bus_routes[bus_nr]:
+                    csv_writer.writerow(self.bus_routes[bus_nr][route_type].to_csv())
+
+
 

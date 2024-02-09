@@ -11,13 +11,16 @@ if __name__ == '__main__':
     #dt.dump_streets('streets.csv')
     #dt.get_bus_data(2, 1)
     #dt.dump_bus_data('bus_data.csv')
+    dt.get_bus_routes()
+    dt.dump_bus_routes('bus_routes_data')
 
-    #da = data_analyzer()
+    da = data_analyzer()
     #da.read_bus_data('bus_data.csv')
     #print(da.calc_nr_of_overspeeding_busses(1))
     #da.calc_data_for_overspeed_percentages(1)
     #da.calc_overspeed_percentages()
     #print(da.overspeed_percentages)
+    #da.calc_times_for_stops()
 
     #dt.get_stops_data()
     #dt.dump_stops_data('bus_stop_data.csv')

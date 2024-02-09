@@ -75,8 +75,7 @@ class bus_stop:
     team: str
     post: str
     direction: str
-    longitude: float
-    latitude: float
+    location: Location
 
     def __init__(self, team_name, street_id, team, post, direction, longitude, latitude):
         self.team_name = team_name
@@ -84,11 +83,10 @@ class bus_stop:
         self.team = team
         self.post = post
         self.direction = direction
-        self.longitude = longitude
-        self.latitude = latitude
+        self.location = Location(longitude, latitude)
 
     def to_csv(self):
-        result = [self.team_name, self.street_id, self.team, self.post, self.direction, self.longitude, self.latitude]
+        result = [self.team_name, self.street_id, self.team, self.post, self.direction] + self.location.to_csv()
         return result
 
 
@@ -123,6 +121,21 @@ class bus_schedule_entry:
         result = [self.brigade, self.direction, self.route, self.time]
         return result
 
+class bus_route_entry:
+    street_id: str
+    team_nr: str
+    type: str
+    bus_stop_nr: str
+
+    def __init__(self, street_id, team_nr, type, bus_stop_nr):
+        self.street_id = street_id
+        self.team_nr = team_nr
+        self.type = type
+        self.bus_stop_nr = bus_stop_nr
+
+    def to_csv(self):
+        result = [self.street_id, self.team_nr, self.type, self.bus_stop_nr]
+        return result
 
 class street_holder:
     street_name: str
