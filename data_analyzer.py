@@ -8,6 +8,7 @@ from data_holders import ZTM_bus, Location, bus_route_entry, bus_stop
 class data_analyzer:
     bus_data = dict
     bus_stop_data: dict
+    bus_routes_data: dict
     points_of_overspeed: dict
     nr_of_all_busses_for_ovespeed_points: dict
     overspeed_percentages: dict
@@ -16,7 +17,8 @@ class data_analyzer:
 
     def __init__(self):
         self.bus_data = {}
-        self.bus_data = {}
+        self.bus_stop_data = {}
+        self.bus_routes_data = {}
         self.points_of_overspeed = {}
         self.nr_of_all_busses_for_ovespeed_points = {}
         self.overspeed_percentages = {}
@@ -40,7 +42,7 @@ class data_analyzer:
                     else:
                         self.bus_data[row[0]] = {row[4]: [bus]}
 
-    def read_bus_Stop_data(self, bus_stop_filename):
+    def read_bus_stop_data(self, bus_stop_filename):
         with open(bus_stop_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -48,6 +50,22 @@ class data_analyzer:
                 nr_of_lines += 1
                 if nr_of_lines > 1:
                     bs = bus_stop(row[0], row[1], row[2], row[3], row[4], float(row[5]), float(row[6]))
+                    if bs.street_id not in self.bus_stop_data:
+                        self.bus_stop_data[bs.street_id] = {}
+                    if bs.team not in self.bus_stop_data[bs.street_id]:
+                        self.bus_stop_data[bs.street_id][bs.team] = []
+                    self.bus_stop_data[bs.street_id][bs.team].append(bs)
+
+    def read_bus_routes_data(self, bus_routes_filename):
+        with open(bus_routes_filename, 'r', encoding='utf16') as file:
+            reader = csv.reader(file)
+            nr_of_lines = 0
+            for row in reader:
+                nr_of_lines += 1
+                if nr_of_lines > 1:
+                    bre = bus_route_entry(row[0], row[1], row[2], row[3])
+
+
 
     def normalise_avg_speed(self, sample_length, dist):
         local_length = sample_length
@@ -108,9 +126,20 @@ class data_analyzer:
             self.overspeed_percentages[key] = (float(self.points_of_overspeed[key]) /
                                                float(self.nr_of_all_busses_for_ovespeed_points[key]))
 
+    def bus_stops_in_one_sample(self, loc_a, loc_b):
+        diff_x = loc_b.longitude - loc_a.longitude
+        diff_y = loc_b.latitude - loc_a.latitude
+        diff_x /= 8
+        diff_y /= 8
+        loc_c = Location(loc_a.longitude, loc_a.latitude)
+        for i in range(9):
+
+
+
     def calc_times_for_stops(self):
         for bus_nr in self.bus_data:
             for vehicle_nr in self.bus_data[bus_nr]:
-                for bus_data in self.bus_data[bus_nr][vehicle_nr]:
-                    print(bus_data.to_csv())
+                for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
+                    self.bus_stops_in_one_sample(self.bus_data[bus_nr][vehicle_nr][i].location,
+                                                 self.bus_data[bus_nr][vehicle_nr][i + 1].location)
 

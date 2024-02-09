@@ -205,10 +205,11 @@ class data_reader:
                 for nr in response.json()['result'][bus_nr][route_type]:
                     helper = response.json()['result'][bus_nr][route_type][nr]
                     self.bus_routes[bus_nr][route_type][int(nr)] = (
-                        bus_route_entry(helper['ulica_id'], helper['nr_zespolu'], helper['typ'], helper['nr_przystanku']))
+                        bus_route_entry(route_type, helper['ulica_id'], helper['nr_zespolu'],
+                                        helper['typ'], helper['nr_przystanku']))
 
     def dump_bus_routes(self, file_to_dump):
-        data_headers = ['Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
+        data_headers = ['Route_code', 'Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
