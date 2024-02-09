@@ -63,12 +63,12 @@ class data_analyzer:
             for row in reader:
                 nr_of_lines += 1
                 if nr_of_lines > 1:
-                    bre = bus_route_entry(row[0], row[1], row[2], row[3], row[4])
-                    if row[1] not in self.bus_routes_data:
-                        self.bus_routes_data[row[1]] = {}
-                    if row[2] not in self.bus_routes_data[row[1]]:
-                        self.bus_routes_data[row[1]][row[2]] ={}
-                    self.bus_routes_data[row[1]][row[2]][row[0]] = bre
+                    bre = bus_route_entry(row[0], row[1], row[2], row[3], row[4], row[5])
+                    if row[0] not in self.bus_routes_data:
+                        self.bus_routes_data[row[0]] = {}
+                    if row[1] not in self.bus_routes_data[row[0]]:
+                        self.bus_routes_data[row[0]][row[1]] = []
+                    self.bus_routes_data[row[0]][row[1]].append(bre)
 
 
 
@@ -131,13 +131,17 @@ class data_analyzer:
             self.overspeed_percentages[key] = (float(self.points_of_overspeed[key]) /
                                                float(self.nr_of_all_busses_for_ovespeed_points[key]))
 
-    def bus_stops_in_one_sample(self, loc_a, loc_b):
+    def bus_stops_in_one_sample(self, loc_a, loc_b, bus):
         diff_x = loc_b.longitude - loc_a.longitude
         diff_y = loc_b.latitude - loc_a.latitude
         diff_x /= 8
         diff_y /= 8
         loc_c = Location(loc_a.longitude, loc_a.latitude)
-        for i in range(9):
+        #for i in range(9):
+            #for bus_nr in self.bus_routes_data:
+                #for street_id in self.bus_routes_data[bus_nr]:
+
+
 
 
 

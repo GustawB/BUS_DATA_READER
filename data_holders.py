@@ -122,13 +122,15 @@ class bus_schedule_entry:
         return result
 
 class bus_route_entry:
+    bus_nr: str
     route_code: str
     street_id: str
     team_nr: str
     type: str
     bus_stop_nr: str
 
-    def __init__(self, route_code, street_id, team_nr, type, bus_stop_nr):
+    def __init__(self, bus_nr, route_code, street_id, team_nr, type, bus_stop_nr):
+        self.bus_nr = bus_nr
         self.route_code = route_code
         self.street_id = street_id
         self.team_nr = team_nr
@@ -136,7 +138,7 @@ class bus_route_entry:
         self.bus_stop_nr = bus_stop_nr
 
     def to_csv(self):
-        result = [self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
+        result = [self.bus_nr, self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
         return result
 
 class street_holder:
