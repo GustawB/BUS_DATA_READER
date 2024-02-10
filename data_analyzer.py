@@ -16,6 +16,7 @@ class data_analyzer:
     times_for_stops: dict
     nr_of_busses_for_stops: dict
     avg_times_for_stops: dict
+    schedules: dict
     nr_of_invalid_speeds: int
     nr_of_invalid_times: int
 
@@ -29,8 +30,27 @@ class data_analyzer:
         self.times_for_stops = {}
         self.nr_of_busses_for_stops = {}
         self.avg_times_for_stops = {}
+        self.schedules = {}
+
         self.nr_of_invalid_speeds = 0
         self.nr_of_invalid_times = 0
+
+    def read_schedules_data(self):
+        with os.scandir('schedules') as it:
+            for entry in it:
+                team = entry.path[10:14]
+                post = entry.path[15:17]
+                bus = entry.path[18:21]
+                if team not in self.schedules:
+                    self.schedules[team] = {}
+                if post not in self.schedules[team]:
+                    self.schedules[team][post] = {}
+                if bus not in self.schedules[team][post]:
+                    self.schedules[team][post][bus] = []
+                with open(entry.path, 'r', encoding='utf16') as file:
+                    csv_reader = csv.reader(file)
+                    for row in csv_reader:
+                        self.schedules[team][post][bus].append(row)
 
     def read_bus_data(self, bus_filename):
         with open(bus_filename, 'r', encoding='utf16') as file:
@@ -42,8 +62,7 @@ class data_analyzer:
                     street_name = row[3]
                     if street_name[:5] == 'ulica':
                         street_name = street_name[6:]
-                    bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[4], row[5],
-                                  dt.datetime.strptime(row[6], "%Y-%m-%d %H:%M:%S"), street_name)
+                    bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[4], row[5], row[6], street_name)
                     if row[0] in self.bus_data:
                         if row[4] in self.bus_data[row[0]]:
                             self.bus_data[row[0]][row[4]].append(bus)
@@ -152,25 +171,15 @@ class data_analyzer:
 
     def calc_time_difference(self, bus, bs_data, route_code):
         min_diff = 100000
-        filename = 'schedules/' + bs_data.team + '_' + bs_data.post + '_' + bus.line + '.csv'
-        # if not os.path.isfile('a'):
-        #  return None
-        file = None
+        # print(str(bs_data.team) + ' ' + str(bs_data.post) + ' ' + str(bus.line))
         try:
-            file = open(filename, 'r', encoding='utf16')
-        except FileNotFoundError:
-            return None
-            # with open(filename, 'r', encoding='utf16') as file:
-        csv_reader = csv.reader(file)
-        for row in csv_reader:
-            if row[2] == route_code:
-                time_data = dt.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
-                time_data_new = datetime.datetime(bus.time_data.year, bus.time_data.month, bus.time_data.day,
-                                                  time_data.hour, time_data.minute, time_data.second)
-
-                difference = bus.time_data - time_data_new
-                if abs(difference.total_seconds()) < abs(min_diff):
-                    min_diff = difference.total_seconds()
+            for row in self.schedules[bs_data.team][bs_data.post][bus.line]:
+                if row[2] == route_code:
+                    time_sec = int(row[3])
+                    difference = bus.time_data - time_sec
+                    if abs(difference) < abs(min_diff):
+                        min_diff = difference
+        except KeyError: return 0
         return min_diff
 
     def bus_stops_in_one_sample(self, loc_a, loc_b, bus):

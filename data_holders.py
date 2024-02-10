@@ -54,7 +54,7 @@ class ZTM_bus:
     location: Location
     vehicle_number: str
     brigade: str
-    time_data: time.struct_time
+    time_data: int
     street_name: str
 
     def __init__(self, line, longitude, latitude, vehicle_number, brigade, time_data, street_name=''):
@@ -62,7 +62,12 @@ class ZTM_bus:
         self.location = Location(longitude, latitude, street_name)
         self.vehicle_number = vehicle_number
         self.brigade = brigade
-        self.time_data = time_data
+        time_helper = time_data[11:]
+        time_sec = int(time_helper[:2]) * 60
+        time_sec += int(time_helper[3:5])
+        time_sec *= 60
+        time_sec += int(time_helper[6:])
+        self.time_data = time_sec
 
     def to_csv(self):
         result = [self.line] + self.location.to_csv() + [self.vehicle_number, self.brigade, self.time_data]
@@ -113,16 +118,22 @@ class bus_schedule_entry:
     brigade: str
     direction: str
     route: str
-    time: time.struct_time
+    time_data: int
 
-    def __init__(self, brigade, direction, route, time):
+    def __init__(self, brigade, direction, route, time_data):
         self.brigade = brigade
         self.direction = direction
         self.route = route
         self.time = time
+        time_helper = time_data[11:]
+        time_sec = int(time_helper[:2]) * 60
+        time_sec += int(time_helper[3:5])
+        time_sec *= 60
+        time_sec += int(time_helper[6:])
+        self.time_data = time_sec
 
     def to_csv(self):
-        result = [self.brigade, self.direction, self.route, self.time]
+        result = [self.brigade, self.direction, self.route, self.time_data]
         return result
 
 

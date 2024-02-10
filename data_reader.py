@@ -2,8 +2,6 @@ import time
 import csv
 import os
 
-import datetime as dt
-
 from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, bus_route_entry
 import requests
 
@@ -53,7 +51,7 @@ class data_reader:
                 helper = (response.json()['result'][j])
                 time_data = self.time_parser(helper['Time'])
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
-                              helper['Brigade'], dt.datetime.strptime(time_data, "%Y-%m-%d %H:%M:%S"))
+                              helper['Brigade'], time_data)
 
                 if helper['Lines'] in self.bus_data:
                     self.bus_data[helper['Lines']].append(bus)
@@ -140,8 +138,7 @@ class data_reader:
                     for data in response.json()['result']:
                         time_data = self.time_parser(data['values'][5]['value'])
                         scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
-                                                 data['values'][4]['value'],
-                                                 dt.datetime.strptime(time_data, "%H:%M:%S"))
+                                                 data['values'][4]['value'], time_data)
                         if line[0] in self.schedules:
                             if line[1] in self.schedules[line[0]]:
                                 if line[2] in self.schedules[line[0]][line[1]]:

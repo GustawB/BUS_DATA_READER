@@ -30,6 +30,8 @@ if __name__ == '__main__':
     print(dist*1000)
 
     da = data_analyzer()
+    da.read_schedules_data()
+    #print(da.schedules)
     da.read_bus_data('bus_data.csv')
     da.read_bus_stop_data('bus_stop_data.csv')
     da.read_bus_routes_data('bus_routes_data.csv')
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     #print(da.overspeed_percentages)
     da.calc_times_for_stops()
     da.calc_average_delays()
-    print(da.avg_times_for_stops)
+    #print(da.avg_times_for_stops)
 
     # dt.get_stops_data()
     # dt.dump_stops_data('bus_stop_data.csv')
