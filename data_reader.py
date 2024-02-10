@@ -195,7 +195,7 @@ class data_reader:
                 iterator += 1
 
     def dump_bus_routes(self, file_to_dump):
-        data_headers = ['Route_code', 'Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
+        data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)

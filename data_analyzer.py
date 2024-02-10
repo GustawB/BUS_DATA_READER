@@ -3,8 +3,6 @@ import datetime
 import datetime as dt
 import os.path
 
-import geopy.distance
-
 from data_holders import ZTM_bus, Location, bus_route_entry, bus_stop, bus_schedule_entry
 
 
@@ -62,11 +60,9 @@ class data_analyzer:
                 nr_of_lines += 1
                 if nr_of_lines > 1:
                     bs = bus_stop(row[0], row[1], row[2], row[3], row[4], float(row[5]), float(row[6]))
-                    if bs.street_id not in self.bus_stop_data:
-                        self.bus_stop_data[bs.street_id] = {}
-                    if bs.post not in self.bus_stop_data[bs.street_id]:
-                        self.bus_stop_data[bs.street_id][bs.post] = []
-                    self.bus_stop_data[bs.street_id][bs.post].append(bs)
+                    if bs.team not in self.bus_stop_data:
+                        self.bus_stop_data[bs.team] = {}
+                    self.bus_stop_data[bs.team][bs.post] = bs
 
     def read_bus_routes_data(self, bus_routes_filename):
         with open(bus_routes_filename, 'r', encoding='utf16') as file:
@@ -84,9 +80,9 @@ class data_analyzer:
 
     def normalise_avg_speed(self, dist, prev_bus, next_bus):
         local_length = next_bus.time_data - prev_bus.time_data
-        #print(local_length)
+        # print(local_length)
         if local_length.total_seconds() <= 0:
-            #print(str(prev_bus.time_data) + ' ' + str(next_bus.time_data))
+            # print(str(prev_bus.time_data) + ' ' + str(next_bus.time_data))
             self.nr_of_invalid_times += 1
             return -1
         speed = dist / local_length.total_seconds() * 3600 / 1000
@@ -104,7 +100,8 @@ class data_analyzer:
                 for i in range(len(self.bus_data[bus_line][bus]) - 1):
                     dist = self.bus_data[bus_line][bus][i + 1].location.distance(
                         self.bus_data[bus_line][bus][i].location)
-                    speed = self.normalise_avg_speed(dist, self.bus_data[bus_line][bus][i], self.bus_data[bus_line][bus][i + 1])
+                    speed = self.normalise_avg_speed(dist, self.bus_data[bus_line][bus][i],
+                                                     self.bus_data[bus_line][bus][i + 1])
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
 
@@ -134,7 +131,8 @@ class data_analyzer:
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
                         self.bus_data[bus_nr][vehicle_nr][i].location)
-                    speed = self.normalise_avg_speed(dist, self.bus_data[bus_nr][vehicle_nr][i], self.bus_data[bus_nr][vehicle_nr][i + 1])
+                    speed = self.normalise_avg_speed(dist, self.bus_data[bus_nr][vehicle_nr][i],
+                                                     self.bus_data[bus_nr][vehicle_nr][i + 1])
                     if 50 >= speed >= 0:
                         self.points_with_no_overspeeds(self.bus_data[bus_nr][vehicle_nr][i + 1])
                     elif speed > 50:
@@ -149,30 +147,30 @@ class data_analyzer:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for data in sorted(self.overspeed_percentages, key=self.overspeed_percentages.get, reverse=True):
-                data_list = [data, str(int(self.overspeed_percentages[data]*100))]
+                data_list = [data, str(int(self.overspeed_percentages[data] * 100))]
                 csv_writer.writerow(data_list)
-
 
     def calc_time_difference(self, bus, bs_data, route_code):
         min_diff = 100000
         filename = 'schedules/' + bs_data.team + '_' + bs_data.post + '_' + bus.line + '.csv'
-        if not os.path.isfile(filename):
+        # if not os.path.isfile('a'):
+        #  return None
+        file = None
+        try:
+            file = open(filename, 'r', encoding='utf16')
+        except FileNotFoundError:
             return None
-        with open(filename, 'r', encoding='utf16') as file:
-            csv_reader = csv.reader(file)
-            for row in csv_reader:
-                # print(row)
-                if row[2] == route_code:
-                    time_data = dt.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
-                    # print(type(bus.time_data))
-                    time_data_new = datetime.datetime(bus.time_data.year, bus.time_data.month, bus.time_data.day,
-                                                      time_data.hour, time_data.minute, time_data.second)
+            # with open(filename, 'r', encoding='utf16') as file:
+        csv_reader = csv.reader(file)
+        for row in csv_reader:
+            if row[2] == route_code:
+                time_data = dt.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
+                time_data_new = datetime.datetime(bus.time_data.year, bus.time_data.month, bus.time_data.day,
+                                                  time_data.hour, time_data.minute, time_data.second)
 
-                    difference = bus.time_data - time_data_new
-                    #print(str(bus.time_data) + ' ' + str(time_data_new))
-                    if abs(difference.total_seconds()) < abs(min_diff):
-                        min_diff = difference.total_seconds()
-        #print(min_diff)
+                difference = bus.time_data - time_data_new
+                if abs(difference.total_seconds()) < abs(min_diff):
+                    min_diff = difference.total_seconds()
         return min_diff
 
     def bus_stops_in_one_sample(self, loc_a, loc_b, bus):
@@ -185,23 +183,30 @@ class data_analyzer:
         for i in range(9):
             for route_code in self.bus_routes_data[bus.line]:
                 for bre in self.bus_routes_data[bus.line][route_code]:
-                    for bs_data in self.bus_stop_data[bre.street_id][bre.bus_stop_nr]:
-                        if loc_c == bs_data.location:
-                            delay = self.calc_time_difference(bus, bs_data, route_code)
-                            if delay is not None and bs_data in found_bus_stops:
-                                temp = found_bus_stops[bs_data]
-                                found_bus_stops[bs_data] = min(delay, temp)
-                                #print(found_bus_stops[bs_data])
-                            elif delay is not None:
-                                found_bus_stops[bs_data] = delay
+                    # print(str(bus.line) + ' ' + str(bre.team_nr) + ' ' + str(bre.bus_stop_nr) + ' ' + str(route_code))
+                    bs_data = self.bus_stop_data[bre.team_nr][bre.bus_stop_nr]
+                    if loc_c == bs_data.location:
+                        delay = self.calc_time_difference(bus, bs_data, route_code)
+                        if delay is not None and bs_data in found_bus_stops:
+                            temp = found_bus_stops[bs_data]
+                            found_bus_stops[bs_data] = min(delay, temp)
+                            # print(found_bus_stops[bs_data])
+                        elif delay is not None:
+                            found_bus_stops[bs_data] = delay
             loc_c.longitude += diff_x
             loc_c.latitude += diff_y
 
         return found_bus_stops
 
     def calc_times_for_stops(self):
+        print(len(self.bus_data))
+        nr = 0
         for bus_nr in self.bus_data:
+            if nr > 120: break
+            print(nr)
+            nr += 1
             for vehicle_nr in self.bus_data[bus_nr]:
+                # print(len(self.bus_data[bus_nr][vehicle_nr]))
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     found_bus_stops = self.bus_stops_in_one_sample(self.bus_data[bus_nr][vehicle_nr][i].location,
                                                                    self.bus_data[bus_nr][vehicle_nr][i + 1].location,

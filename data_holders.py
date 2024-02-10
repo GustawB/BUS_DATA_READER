@@ -1,5 +1,5 @@
 import time
-import geopy.distance
+from math import cos, asin, sqrt, pi
 import datetime as dt
 
 import requests
@@ -14,10 +14,15 @@ class Location:
         self.street_name = street_name
         # print(response.json()['results']['1']['street'])
 
+    def distance(self, other):
+        r = 6371  # km
+        p = pi / 180
+        a = (0.5 - cos((other.latitude - self.latitude) * p) / 2 + cos(self.latitude * p) * cos(other.latitude * p) *
+             (1 - cos((other.longitude - self.longitude) * p)) / 2)
+        return 2 * r * asin(sqrt(a))
+
     def __eq__(self, other):
-        coords1 = (self.latitude, self.longitude)
-        coords2 = (other.latitude, other.longitude)
-        dist = geopy.distance.geodesic(coords1, coords2).m
+        dist = self.distance(other)
         if dist <= 20000:
             return True
         else:
@@ -25,11 +30,6 @@ class Location:
 
     def __ne__(self, other):
         return not (self == other)
-
-    def distance(self, other):
-        coords1 = (self.latitude, self.longitude)
-        coords2 = (other.latitude, other.longitude)
-        return geopy.distance.geodesic(coords1, coords2).m
 
     def find_street(self):
         if self.street_name == '':

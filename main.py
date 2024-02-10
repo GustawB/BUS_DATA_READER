@@ -1,4 +1,5 @@
 import geopy.distance
+from math import cos, asin, sqrt, pi
 import requests
 import os
 
@@ -19,7 +20,14 @@ if __name__ == '__main__':
     coords1 = (21.199136, 52.208586)
     coords2 = (21.193173, 52.207389)
     dist = geopy.distance.geodesic(coords1, coords2).m
-    print(dist/40*3600/1000)
+    #print(dist/40*3600/1000)
+    print(dist)
+    r = 6371  # km
+    p = pi / 180
+    a = (0.5 - cos((coords2[0] - coords1[0]) * p) / 2 + cos(coords1[0] * p) * cos(coords2[0] * p) *
+         (1 - cos((coords2[1] - coords1[1]) * p)) / 2)
+    dist = 2 * r * asin(sqrt(a))
+    print(dist*1000)
 
     da = data_analyzer()
     da.read_bus_data('bus_data.csv')
@@ -28,12 +36,12 @@ if __name__ == '__main__':
     #print(da.calc_nr_of_overspeeding_busses())
     #print(da.nr_of_invalid_times)
     #print(da.nr_of_invalid_speeds)
-    da.calc_data_for_overspeed_percentages()
-    da.calc_overspeed_percentages('overspeed_data.csv')
-    print(da.overspeed_percentages)
-    # da.calc_times_for_stops()
-    # da.calc_average_delays()
-    # print(da.avg_times_for_stops)
+    #da.calc_data_for_overspeed_percentages()
+    #da.calc_overspeed_percentages('overspeed_data.csv')
+    #print(da.overspeed_percentages)
+    da.calc_times_for_stops()
+    da.calc_average_delays()
+    print(da.avg_times_for_stops)
 
     # dt.get_stops_data()
     # dt.dump_stops_data('bus_stop_data.csv')
@@ -47,5 +55,5 @@ if __name__ == '__main__':
     # da.calc_overspeed_percentages()
     # print(da.overspeed_percentages)
 
-    dv = data_visualizer('overspeed_data.csv', 'Overspeed percentages for streets', 0, 1)
-    dv.print_data()
+    #dv = data_visualizer('overspeed_data.csv', 'Overspeed percentages for streets', 0, 1)
+    #dv.print_data()
