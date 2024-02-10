@@ -18,6 +18,8 @@ class data_analyzer:
     times_for_stops: dict
     nr_of_busses_for_stops: dict
     avg_times_for_stops: dict
+    nr_of_invalid_speeds: int
+    nr_of_invalid_times: int
 
     def __init__(self):
         self.bus_data = {}
@@ -29,6 +31,8 @@ class data_analyzer:
         self.times_for_stops = {}
         self.nr_of_busses_for_stops = {}
         self.avg_times_for_stops = {}
+        self.nr_of_invalid_speeds = 0
+        self.nr_of_invalid_times = 0
 
     def read_bus_data(self, bus_filename):
         with open(bus_filename, 'r', encoding='utf16') as file:
@@ -78,15 +82,21 @@ class data_analyzer:
                         self.bus_routes_data[row[0]][row[1]] = []
                     self.bus_routes_data[row[0]][row[1]].append(bre)
 
-    def normalise_avg_speed(self, sample_length, dist):
-        local_length = sample_length
-        speed = dist / local_length * 3600 / 1000
-        while speed > 100:
-            local_length += 1
-            speed = dist / local_length * 3600 / 1000
+    def normalise_avg_speed(self, dist, prev_bus, next_bus):
+        local_length = next_bus.time_data - prev_bus.time_data
+        #print(local_length)
+        if local_length.total_seconds() <= 0:
+            #print(str(prev_bus.time_data) + ' ' + str(next_bus.time_data))
+            self.nr_of_invalid_times += 1
+            return -1
+        speed = dist / local_length.total_seconds() * 3600 / 1000
+        if speed > 120 or speed < 0:
+            self.nr_of_invalid_speeds += 1
+            return -1
         return speed
 
-    def calc_nr_of_overspeeding_busses(self, sample_length):
+    def calc_nr_of_overspeeding_busses(self):
+        self.nr_of_invalid_times = 0
         nr_of_busses_overspeeding = 0
         for bus_line in self.bus_data:
             for bus in self.bus_data[bus_line]:
@@ -94,8 +104,7 @@ class data_analyzer:
                 for i in range(len(self.bus_data[bus_line][bus]) - 1):
                     dist = self.bus_data[bus_line][bus][i + 1].location.distance(
                         self.bus_data[bus_line][bus][i].location)
-                    speed = self.normalise_avg_speed(sample_length, dist)
-                    print(speed)
+                    speed = self.normalise_avg_speed(dist, self.bus_data[bus_line][bus][i], self.bus_data[bus_line][bus][i + 1])
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
 
@@ -118,18 +127,17 @@ class data_analyzer:
 
         self.points_with_no_overspeeds(bus)
 
-    def calc_data_for_overspeed_percentages(self, sample_length):
-        number = 0
+    def calc_data_for_overspeed_percentages(self):
+        self.nr_of_invalid_times = 0
         for bus_nr in self.bus_data:
             for vehicle_nr in self.bus_data[bus_nr]:
-                number += 1
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
                         self.bus_data[bus_nr][vehicle_nr][i].location)
-                    speed = self.normalise_avg_speed(sample_length, dist)
-                    if speed <= 50:
+                    speed = self.normalise_avg_speed(dist, self.bus_data[bus_nr][vehicle_nr][i], self.bus_data[bus_nr][vehicle_nr][i + 1])
+                    if 50 >= speed >= 0:
                         self.points_with_no_overspeeds(self.bus_data[bus_nr][vehicle_nr][i + 1])
-                    else:
+                    elif speed > 50:
                         self.points_with_overspeeds(self.bus_data[bus_nr][vehicle_nr][i + 1])
 
     def calc_overspeed_percentages(self, file_to_dump):
@@ -141,7 +149,7 @@ class data_analyzer:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for data in sorted(self.overspeed_percentages, key=self.overspeed_percentages.get, reverse=True):
-                data_list = [data, self.overspeed_percentages[data]]
+                data_list = [data, str(int(self.overspeed_percentages[data]*100))]
                 csv_writer.writerow(data_list)
 
 

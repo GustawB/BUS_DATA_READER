@@ -39,7 +39,7 @@ class Location:
             if response.json()['results'] is not None:
                 self.street_name = response.json()['results']['1']['street']
             else:
-                self.street_name = 'None'
+                self.street_name = 'Unknown_location'
 
     def __hash__(self):
         return hash((self.latitude, self.latitude))
