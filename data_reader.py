@@ -74,7 +74,7 @@ class data_reader:
                     csv_writer.writerow(value.to_csv())
 
     def get_stops_data(self):
-        response = requests.post(
+        response = requests.get(
             'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
         for data in response.json()['result']:
             bs = bus_stop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
