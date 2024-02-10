@@ -145,16 +145,3 @@ class bus_route_entry:
     def to_csv(self):
         result = [self.bus_nr, self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
         return result
-
-
-class street_holder:
-    street_name: str
-    location: Location
-
-    def __init__(self, street_name, longitude, latitude):
-        self.street_name = street_name
-        self.location = Location(longitude, latitude)
-
-    def to_csv(self):
-        result = [self.street_name] + self.location.to_csv()
-        return result

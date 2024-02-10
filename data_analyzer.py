@@ -37,8 +37,11 @@ class data_analyzer:
             for row in reader:
                 nr_of_lines = nr_of_lines + 1
                 if nr_of_lines > 1:
+                    street_name = row[3]
+                    if street_name[:5] == 'ulica':
+                        street_name = street_name[6:]
                     bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[4], row[5],
-                                  dt.datetime.strptime(row[6], "%Y-%m-%d %H:%M:%S"), row[3])
+                                  dt.datetime.strptime(row[6], "%Y-%m-%d %H:%M:%S"), street_name)
                     if row[0] in self.bus_data:
                         if row[4] in self.bus_data[row[0]]:
                             self.bus_data[row[0]][row[4]].append(bus)
@@ -129,10 +132,18 @@ class data_analyzer:
                     else:
                         self.points_with_overspeeds(self.bus_data[bus_nr][vehicle_nr][i + 1])
 
-    def calc_overspeed_percentages(self):
+    def calc_overspeed_percentages(self, file_to_dump):
         for key in self.points_of_overspeed:
             self.overspeed_percentages[key] = (float(self.points_of_overspeed[key]) /
                                                float(self.nr_of_all_busses_for_ovespeed_points[key]))
+        data_headers = ['Street_name', 'Percentage']
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for data in sorted(self.overspeed_percentages, key=self.overspeed_percentages.get, reverse=True):
+                data_list = [data, self.overspeed_percentages[data]]
+                csv_writer.writerow(data_list)
+
 
     def calc_time_difference(self, bus, bs_data, route_code):
         min_diff = 100000

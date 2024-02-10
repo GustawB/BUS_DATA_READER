@@ -4,9 +4,10 @@ import os
 
 from data_analyzer import data_analyzer
 from data_reader import data_reader
+from data_visualizer import data_visualizer
 
 if __name__ == '__main__':
-    dt = data_reader('afd497b5-83e7-4ecf-8c98-cd1805aa16c9')
+    #dt = data_reader('afd497b5-83e7-4ecf-8c98-cd1805aa16c9')
     #dt.get_streets()
     #dt.dump_streets('streets.csv')
     #dt.get_bus_data(2, 1)
@@ -17,15 +18,15 @@ if __name__ == '__main__':
 
     da = data_analyzer()
     da.read_bus_data('bus_data.csv')
-    da.read_bus_stop_data('bus_stop_data.csv')
-    da.read_bus_routes_data('bus_routes_data.csv')
+    #da.read_bus_stop_data('bus_stop_data.csv')
+    #da.read_bus_routes_data('bus_routes_data.csv')
     #print(da.calc_nr_of_overspeeding_busses(1))
-    #da.calc_data_for_overspeed_percentages(1)
-    #da.calc_overspeed_percentages()
+    da.calc_data_for_overspeed_percentages(1)
+    da.calc_overspeed_percentages('overspeed_data.csv')
     #print(da.overspeed_percentages)
-    da.calc_times_for_stops()
-    da.calc_average_delays()
-    print(da.avg_times_for_stops)
+    #da.calc_times_for_stops()
+    #da.calc_average_delays()
+    #print(da.avg_times_for_stops)
 
     #dt.get_stops_data()
     #dt.dump_stops_data('bus_stop_data.csv')
@@ -38,6 +39,9 @@ if __name__ == '__main__':
     #da.calc_data_for_overspeed_percentages(1)
     #da.calc_overspeed_percentages()
     #print(da.overspeed_percentages)
+
+    dv = data_visualizer('overspeed_data.csv', 'Overspeed percentages for streets', 0, 1)
+    dv.print_data()
 
 
 
