@@ -125,11 +125,10 @@ class bus_schedule_entry:
         self.direction = direction
         self.route = route
         self.time = time
-        time_helper = time_data[11:]
-        time_sec = int(time_helper[:2]) * 60
-        time_sec += int(time_helper[3:5])
+        time_sec = int(time_data[:2]) * 60
+        time_sec += int(time_data[3:5])
         time_sec *= 60
-        time_sec += int(time_helper[6:])
+        time_sec += int(time_data[6:])
         self.time_data = time_sec
 
     def to_csv(self):

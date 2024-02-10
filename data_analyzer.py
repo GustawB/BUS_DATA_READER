@@ -17,8 +17,10 @@ class data_analyzer:
     nr_of_busses_for_stops: dict
     avg_times_for_stops: dict
     schedules: dict
+
     nr_of_invalid_speeds: int
     nr_of_invalid_times: int
+    nr_of_non_existing_schedules: int
 
     def __init__(self):
         self.bus_data = {}
@@ -34,6 +36,7 @@ class data_analyzer:
 
         self.nr_of_invalid_speeds = 0
         self.nr_of_invalid_times = 0
+        self.nr_of_non_existing_schedules = 0
 
     def read_schedules_data(self):
         with os.scandir('schedules') as it:
@@ -179,7 +182,9 @@ class data_analyzer:
                     difference = bus.time_data - time_sec
                     if abs(difference) < abs(min_diff):
                         min_diff = difference
-        except KeyError: return 0
+        except KeyError:
+            self.nr_of_non_existing_schedules += 1
+            return None
         return min_diff
 
     def bus_stops_in_one_sample(self, loc_a, loc_b, bus):
@@ -196,9 +201,9 @@ class data_analyzer:
                     bs_data = self.bus_stop_data[bre.team_nr][bre.bus_stop_nr]
                     if loc_c == bs_data.location:
                         delay = self.calc_time_difference(bus, bs_data, route_code)
-                        if delay is not None and bs_data in found_bus_stops:
+                        if delay is not None and delay != 100000 and bs_data in found_bus_stops:
                             temp = found_bus_stops[bs_data]
-                            found_bus_stops[bs_data] = min(delay, temp)
+                            found_bus_stops[bs_data] = min(abs(delay), abs(temp))
                             # print(found_bus_stops[bs_data])
                         elif delay is not None:
                             found_bus_stops[bs_data] = delay
@@ -211,7 +216,6 @@ class data_analyzer:
         print(len(self.bus_data))
         nr = 0
         for bus_nr in self.bus_data:
-            if nr > 120: break
             print(nr)
             nr += 1
             for vehicle_nr in self.bus_data[bus_nr]:
@@ -228,8 +232,31 @@ class data_analyzer:
                             self.times_for_stops[key] = found_bus_stops[key]
                             self.nr_of_busses_for_stops[key] = 1
 
-    def calc_average_delays(self):
+    def calc_average_delays(self, file_to_dump):
         for key in self.nr_of_busses_for_stops:
             new_key = key.team_name + '_' + key.post
             self.avg_times_for_stops[new_key] = (float(self.times_for_stops[key]) /
                                                  float(self.nr_of_busses_for_stops[key]))
+
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            data_headers = ['Bus_stop', 'Avg_time']
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for data in sorted(self.avg_times_for_stops, key=self.avg_times_for_stops.get, reverse=True):
+                data_list = [data, str(self.avg_times_for_stops[data])]
+                csv_writer.writerow(data_list)
+
+    def dump_invalid_data_stats(self, file_to_dump):
+        data_headers = ['Error_type', 'nr_of_entries']
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            data_list = ['invalid_speeds', str(self.nr_of_invalid_speeds)]
+            csv_writer.writerow(data_list)
+            data_list = ['invalid_times', str(self.nr_of_invalid_times)]
+            csv_writer.writerow(data_list)
+            data_list = ['non_existing_schedules', str(self.nr_of_non_existing_schedules)]
+            csv_writer.writerow(data_list)
+
+
+        
