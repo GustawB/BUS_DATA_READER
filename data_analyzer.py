@@ -1,8 +1,11 @@
 import csv
-from datetime import datetime
+import datetime
+import datetime as dt
+import os.path
+
 import geopy.distance
 
-from data_holders import ZTM_bus, Location, bus_route_entry, bus_stop
+from data_holders import ZTM_bus, Location, bus_route_entry, bus_stop, bus_schedule_entry
 
 
 class data_analyzer:
@@ -14,6 +17,7 @@ class data_analyzer:
     overspeed_percentages: dict
     times_for_stops: dict
     nr_of_busses_for_stops: dict
+    avg_times_for_stops: dict
 
     def __init__(self):
         self.bus_data = {}
@@ -24,6 +28,7 @@ class data_analyzer:
         self.overspeed_percentages = {}
         self.times_for_stops = {}
         self.nr_of_busses_for_stops = {}
+        self.avg_times_for_stops = {}
 
     def read_bus_data(self, bus_filename):
         with open(bus_filename, 'r', encoding='utf16') as file:
@@ -33,7 +38,7 @@ class data_analyzer:
                 nr_of_lines = nr_of_lines + 1
                 if nr_of_lines > 1:
                     bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[4], row[5],
-                                  datetime.strptime(row[6], "%Y-%m-%d %H:%M:%S"), row[3])
+                                  dt.datetime.strptime(row[6], "%Y-%m-%d %H:%M:%S"), row[3])
                     if row[0] in self.bus_data:
                         if row[4] in self.bus_data[row[0]]:
                             self.bus_data[row[0]][row[4]].append(bus)
@@ -70,8 +75,6 @@ class data_analyzer:
                         self.bus_routes_data[row[0]][row[1]] = []
                     self.bus_routes_data[row[0]][row[1]].append(bre)
 
-
-
     def normalise_avg_speed(self, sample_length, dist):
         local_length = sample_length
         speed = dist / local_length * 3600 / 1000
@@ -86,7 +89,8 @@ class data_analyzer:
             for bus in self.bus_data[bus_line]:
                 nr_of_overspeeds = 0
                 for i in range(len(self.bus_data[bus_line][bus]) - 1):
-                    dist = self.bus_data[bus_line][bus][i + 1].location.distance(self.bus_data[bus_line][bus][i].location)
+                    dist = self.bus_data[bus_line][bus][i + 1].location.distance(
+                        self.bus_data[bus_line][bus][i].location)
                     speed = self.normalise_avg_speed(sample_length, dist)
                     print(speed)
                     if speed > 50.0:
@@ -111,7 +115,6 @@ class data_analyzer:
 
         self.points_with_no_overspeeds(bus)
 
-
     def calc_data_for_overspeed_percentages(self, sample_length):
         number = 0
         for bus_nr in self.bus_data:
@@ -132,12 +135,26 @@ class data_analyzer:
                                                float(self.nr_of_all_busses_for_ovespeed_points[key]))
 
     def calc_time_difference(self, bus, bs_data, route_code):
-        min_diff
-        with open('schedules/' + bs_data.team + '_' + bs_data.post + '_' + bus.line) as file:
+        min_diff = 100000
+        filename = 'schedules/' + bs_data.team + '_' + bs_data.post + '_' + bus.line + '.csv'
+        if not os.path.isfile(filename):
+            return None
+        with open(filename, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
             for row in csv_reader:
+                # print(row)
                 if row[2] == route_code:
+                    time_data = dt.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
+                    # print(type(bus.time_data))
+                    time_data_new = datetime.datetime(bus.time_data.year, bus.time_data.month, bus.time_data.day,
+                                                      time_data.hour, time_data.minute, time_data.second)
 
+                    difference = bus.time_data - time_data_new
+                    #print(str(bus.time_data) + ' ' + str(time_data_new))
+                    if abs(difference.total_seconds()) < abs(min_diff):
+                        min_diff = difference.total_seconds()
+        #print(min_diff)
+        return min_diff
 
     def bus_stops_in_one_sample(self, loc_a, loc_b, bus):
         diff_x = loc_b.longitude - loc_a.longitude
@@ -145,24 +162,41 @@ class data_analyzer:
         diff_x /= 8
         diff_y /= 8
         loc_c = Location(loc_a.longitude, loc_a.latitude)
-
+        found_bus_stops = {}
         for i in range(9):
             for route_code in self.bus_routes_data[bus.line]:
                 for bre in self.bus_routes_data[bus.line][route_code]:
                     for bs_data in self.bus_stop_data[bre.street_id][bre.bus_stop_nr]:
-                        if loc_c == bs_data.data.location:
+                        if loc_c == bs_data.location:
+                            delay = self.calc_time_difference(bus, bs_data, route_code)
+                            if delay is not None and bs_data in found_bus_stops:
+                                temp = found_bus_stops[bs_data]
+                                found_bus_stops[bs_data] = min(delay, temp)
+                                #print(found_bus_stops[bs_data])
+                            elif delay is not None:
+                                found_bus_stops[bs_data] = delay
+            loc_c.longitude += diff_x
+            loc_c.latitude += diff_y
 
-
-
-
-
-
-
+        return found_bus_stops
 
     def calc_times_for_stops(self):
         for bus_nr in self.bus_data:
             for vehicle_nr in self.bus_data[bus_nr]:
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
-                    self.bus_stops_in_one_sample(self.bus_data[bus_nr][vehicle_nr][i].location,
-                                                 self.bus_data[bus_nr][vehicle_nr][i + 1].location)
+                    found_bus_stops = self.bus_stops_in_one_sample(self.bus_data[bus_nr][vehicle_nr][i].location,
+                                                                   self.bus_data[bus_nr][vehicle_nr][i + 1].location,
+                                                                   self.bus_data[bus_nr][vehicle_nr][i + 1])
+                    for key in found_bus_stops:
+                        if key in self.times_for_stops:
+                            self.times_for_stops[key] += found_bus_stops[key]
+                            self.nr_of_busses_for_stops[key] += 1
+                        else:
+                            self.times_for_stops[key] = found_bus_stops[key]
+                            self.nr_of_busses_for_stops[key] = 1
 
+    def calc_average_delays(self):
+        for key in self.nr_of_busses_for_stops:
+            new_key = key.team_name + '_' + key.post
+            self.avg_times_for_stops[new_key] = (float(self.times_for_stops[key]) /
+                                                 float(self.nr_of_busses_for_stops[key]))

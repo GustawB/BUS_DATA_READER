@@ -1,5 +1,6 @@
 import time
 import geopy.distance
+import datetime as dt
 
 import requests
 
@@ -11,13 +12,13 @@ class Location:
         self.longitude = longitude
         self.latitude = latitude
         self.street_name = street_name
-        #print(response.json()['results']['1']['street'])
+        # print(response.json()['results']['1']['street'])
 
     def __eq__(self, other):
         coords1 = (self.latitude, self.longitude)
         coords2 = (other.latitude, other.longitude)
         dist = geopy.distance.geodesic(coords1, coords2).m
-        if dist <= 200:
+        if dist <= 20000:
             return True
         else:
             return False
@@ -39,7 +40,6 @@ class Location:
                 self.street_name = response.json()['results']['1']['street']
             else:
                 self.street_name = 'None'
-
 
     def __hash__(self):
         return hash((self.latitude, self.latitude))
@@ -85,6 +85,10 @@ class bus_stop:
         self.direction = direction
         self.location = Location(longitude, latitude)
 
+    def __hash__(self):
+        return hash((self.team_name, self.street_id, self.team,
+                     self.post, self.direction, self.location))
+
     def to_csv(self):
         result = [self.team_name, self.street_id, self.team, self.post, self.direction] + self.location.to_csv()
         return result
@@ -121,6 +125,7 @@ class bus_schedule_entry:
         result = [self.brigade, self.direction, self.route, self.time]
         return result
 
+
 class bus_route_entry:
     bus_nr: str
     route_code: str
@@ -140,6 +145,7 @@ class bus_route_entry:
     def to_csv(self):
         result = [self.bus_nr, self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
         return result
+
 
 class street_holder:
     street_name: str

@@ -2,7 +2,7 @@ import time
 import csv
 import os
 
-from datetime import datetime
+import datetime as dt
 
 from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, street_holder, bus_route_entry
 import requests
@@ -52,7 +52,7 @@ class data_reader:
                 # print(response.json()['result'])
                 time_data = self.time_parser(helper['Time'])
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
-                              helper['Brigade'], datetime.strptime(time_data, "%Y-%m-%d %H:%M:%S"))
+                              helper['Brigade'], dt.datetime.strptime(time_data, "%Y-%m-%d %H:%M:%S"))
 
                 if helper['Lines'] in self.bus_data:
                     self.bus_data[helper['Lines']].append(bus)
@@ -63,7 +63,9 @@ class data_reader:
 
     def dump_bus_data(self, file_to_dump):
         data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
+        print('gex')
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            print('dex')
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for key in self.bus_data:
@@ -133,12 +135,12 @@ class data_reader:
                     response = requests.post(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e-60518c9f3238&busstopId=' +
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.api_key)
-                    print(response.json())
+                    #print(response.json())
                     for data in response.json()['result']:
                         time_data = self.time_parser(data['values'][5]['value'])
                         scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
                                                  data['values'][4]['value'],
-                                                 datetime.strptime(time_data, "%H:%M:%S"))
+                                                 dt.datetime.strptime(time_data, "%H:%M:%S"))
                         if line[0] in self.schedules:
                             if line[1] in self.schedules[line[0]]:
                                 if line[2] in self.schedules[line[0]][line[1]]:
@@ -188,7 +190,10 @@ class data_reader:
     def get_bus_routes(self):
         response = requests.post(
             'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.api_key)
+        iterator = 0
+        print('sex')
         for bus_nr in response.json()['result']:
+            if iterator == 2: break
             for route_type in response.json()['result'][bus_nr]:
                 max_nr = 0
                 #print(response.json()['result'][bus_nr][route_type])
@@ -207,6 +212,7 @@ class data_reader:
                     self.bus_routes[bus_nr][route_type][int(nr)] = (
                         bus_route_entry(bus_nr, route_type, helper['ulica_id'], helper['nr_zespolu'],
                                         helper['typ'], helper['nr_przystanku']))
+                iterator += 1
 
     def dump_bus_routes(self, file_to_dump):
         data_headers = ['Route_code', 'Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
@@ -216,7 +222,7 @@ class data_reader:
             for bus_nr in self.bus_routes:
                 for route_type in self.bus_routes[bus_nr]:
                     for data in self.bus_routes[bus_nr][route_type]:
-                        csv_writer.writerow(data.to_csv())
+                        csv_writer.writerow(self.bus_routes[bus_nr][route_type][data].to_csv())
 
 
 
