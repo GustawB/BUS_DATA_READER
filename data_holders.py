@@ -59,7 +59,7 @@ class ZTM_bus:
 
     def __init__(self, line, longitude, latitude, vehicle_number, brigade, time_data, street_name=''):
         self.line = line
-        self.location = Location(longitude, latitude, street_name)
+        self.location = Location(float(longitude), float(latitude), street_name)
         self.vehicle_number = vehicle_number
         self.brigade = brigade
         time_helper = time_data[11:]
@@ -68,6 +68,17 @@ class ZTM_bus:
         time_sec *= 60
         time_sec += int(time_helper[6:])
         self.time_data = time_sec
+
+    def __hash__(self):
+        return hash((self.line, self.location, self.vehicle_number, self.brigade, self.time_data))
+
+    def __eq__(self, other):
+        if self.line != other.line: return False
+        if self.location != other.location: return False
+        if self.vehicle_number != other.vehicle_number: return False
+        if self.brigade != other.brigade: return False
+        if self.time_data != other.time_data: return False
+        return True
 
     def to_csv(self):
         result = [self.line] + self.location.to_csv() + [self.vehicle_number, self.brigade, self.time_data]
