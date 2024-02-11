@@ -46,10 +46,9 @@ class data_reader:
         for i in range(nr_of_samples):
             response = requests.get(url)
             while response.status_code != 200:
-                response = requests.post(url)
-            print(response.json()['result'])
+                response = requests.get(url)
             for j in range(len(response.json()['result'])):
-                helper = (response.json()['result'][j])
+                helper = response.json()['result'][j]
                 time_data = self.time_parser(helper['Time'])
                 bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                               helper['Brigade'], time_data)
@@ -149,14 +148,14 @@ class data_reader:
                         else:
                             self.schedules[line[0]] = {line[1]: {line[2]: [scl]}}
 
-    def dump_schedules(self):
+    def dump_schedules(self, folder_to_store_in):
         data_headers = ['Brigade', 'Direction', 'Route', 'Time']
-        if not os.path.isdir('schedules'):
-            os.mkdir('schedules')
+        if not os.path.isdir(folder_to_store_in):
+            os.mkdir(folder_to_store_in)
         for team in self.schedules:
             for post in self.schedules[team]:
                 for bus in self.schedules[team][post]:
-                    with open('schedules/' + team + '_' + post + '_' + bus + '.csv', 'w',
+                    with open(folder_to_store_in +'/' + team + '_' + post + '_' + bus + '.csv', 'w',
                               newline='', encoding='utf16') as file:
                         csv_writer = csv.writer(file)
                         csv_writer.writerow(data_headers)
