@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from data_holders import ZTM_bus, bus_stop, bus_for_stop
+from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry
 from data_reader import data_reader
 
 
@@ -194,7 +194,7 @@ def mock_schedules_1000_01_666():
                     {"value": "null", "key": "symbol_1"},
                     {"value": "3", "key": "brygada"},
                     {"value": "BLBL", "key": "kierunek"},
-                    {"value": "OST", "key": "trasa"},
+                    {"value": "TP-OST", "key": "trasa"},
                     {"value": "15:11:00", "key": "czas"},
                 ]
             }
@@ -279,7 +279,7 @@ def mock_schedules_1001_02_888():
 
 
 @pytest.fixture
-def mock_schedules_1002_03_6():
+def mock_schedules_1002_03_666():
     return {
         "result": [
             {
@@ -308,8 +308,8 @@ def mock_schedules_1002_03_6():
                     {"value": "null", "key": "symbol_1"},
                     {"value": "3", "key": "brygada"},
                     {"value": "BLBL", "key": "kierunek"},
-                    {"value": "OST", "key": "trasa"},
-                    {"value": "18:11:00", "key": "czas"},
+                    {"value": "TP-OST", "key": "trasa"},
+                    {"value": "17:11:00", "key": "czas"},
                 ]
             }
         ]
@@ -352,6 +352,36 @@ def expected_bus_for_stop():
                  bus_for_stop('1000', '01', '777')],
         '1001': [bus_for_stop('1001', '02', '888')],
         '1002': [bus_for_stop('1002', '03', '666')]
+    }
+
+
+@pytest.fixture
+def expected_schedules():
+    return {
+        "1000": {
+            "01": {
+                "666": [bus_schedule_entry('1', 'BLBL', 'TP-OST', '14:51:00'),
+                        bus_schedule_entry('2', 'BLBL', 'TP-OST', '15:01:00'),
+                        bus_schedule_entry('3', 'BLBL', 'TP-OST', '15:11:00')],
+                "777": [bus_schedule_entry('4', 'LBLB', 'TP-TSO', '04:16:00'),
+                        bus_schedule_entry('5', 'LBLB', 'TP-TSO', '05:16:00'),
+                        bus_schedule_entry('6', 'LBLB', 'TP-TSO', '06:16:00'), ]
+            }
+        },
+        "1001": {
+            "02": {
+                "888": [bus_schedule_entry('7', 'BBBB', 'TP-STO', '18:39:00'),
+                        bus_schedule_entry('8', 'BBBB', 'TP-STO', '18:45:00'),
+                        bus_schedule_entry('9', 'BBBB', 'TP-STO', '18:51:00')]
+            }
+        },
+        "1002": {
+            "03": {
+                "666": [bus_schedule_entry('1', 'BLBL', 'TP-OST', '16:51:00'),
+                        bus_schedule_entry('2', 'BLBL', 'TP-OST', '17:01:00'),
+                        bus_schedule_entry('3', 'BLBL', 'TP-OST', '17:11:00')]
+            }
+        }
     }
 
 
@@ -411,3 +441,29 @@ def test_bus_for_stops_data_reading(mock_bus_for_stops_data_1000_01,
             for i in range(len(expected_bus_for_stop[key])):
                 assert expected_bus_for_stop[key][i] == data_dict[key][i]
         dr.dump_busses_for_stops('test_busses_for_stops.csv')
+
+
+def test_schedules_data_reading(mock_schedules_1000_01_666,
+                                mock_schedules_1000_01_777,
+                                mock_schedules_1001_02_888,
+                                mock_schedules_1002_03_666,
+                                expected_schedules):
+    with patch('data_reader.requests.get') as mock_get:
+        mock_get.return_value = MagicMock(status_code=200)
+        mock_get.return_value.json.side_effect = [mock_schedules_1000_01_666,
+                                                  mock_schedules_1000_01_777,
+                                                  mock_schedules_1001_02_888,
+                                                  mock_schedules_1002_03_666]
+        dr = data_reader('random_apikey')
+        dr.get_bus_schedules('test_busses_for_stops.csv')
+        data_dict = dr.schedules
+        for team in expected_schedules:
+            assert team in data_dict
+            for post in expected_schedules[team]:
+                assert post in data_dict[team]
+                for bus in expected_schedules[team][post]:
+                    assert bus in data_dict[team][post]
+                    for i in range(len(expected_schedules[team][post][bus])):
+                        assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
+
+

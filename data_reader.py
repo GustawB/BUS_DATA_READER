@@ -134,7 +134,6 @@ class data_reader:
                     response = requests.get(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e-60518c9f3238&busstopId=' +
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.api_key)
-                    #print(response.json())
                     for data in response.json()['result']:
                         time_data = self.time_parser(data['values'][5]['value'])
                         scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
@@ -167,18 +166,13 @@ class data_reader:
     def get_bus_routes(self):
         response = requests.post(
             'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.api_key)
-        iterator = 0
         print('sex')
         for bus_nr in response.json()['result']:
-            if iterator == 2: break
             for route_type in response.json()['result'][bus_nr]:
                 max_nr = 0
-                #print(response.json()['result'][bus_nr][route_type])
                 for nr in response.json()['result'][bus_nr][route_type]:
-                    #print(nr)
                     if int(nr) > max_nr:
                         max_nr = int(nr)
-                #print(max_nr)
                 if bus_nr not in self.bus_routes:
                     self.bus_routes[bus_nr] = {}
                 self.bus_routes[bus_nr][route_type] = {}
@@ -189,7 +183,6 @@ class data_reader:
                     self.bus_routes[bus_nr][route_type][int(nr)] = (
                         bus_route_entry(bus_nr, route_type, helper['ulica_id'], helper['nr_zespolu'],
                                         helper['typ'], helper['nr_przystanku']))
-                iterator += 1
 
     def dump_bus_routes(self, file_to_dump):
         data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']

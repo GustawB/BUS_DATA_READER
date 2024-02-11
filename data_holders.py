@@ -157,6 +157,13 @@ class bus_schedule_entry:
         time_sec += int(time_data[6:])
         self.time_data = time_sec
 
+    def __eq__(self, other):
+        if self.brigade != other.brigade: return False
+        if self.direction != other.direction: return False
+        if self.route != other.route: return False
+        if self.time_data != other.time_data: return False
+        return True
+
     def to_csv(self):
         result = [self.brigade, self.direction, self.route, self.time_data]
         return result
