@@ -38,12 +38,12 @@ class data_analyzer:
         self.nr_of_invalid_times = 0
         self.nr_of_non_existing_schedules = 0
 
-    def read_schedules_data(self):
-        with os.scandir('schedules') as it:
+    def read_schedules_data(self, dir_with_schedules, dir_length):
+        with os.scandir(dir_with_schedules) as it:
             for entry in it:
-                team = entry.path[10:14]
-                post = entry.path[15:17]
-                bus = entry.path[18:21]
+                team = entry.path[dir_length + 1:dir_length + 5]
+                post = entry.path[dir_length + 6:dir_length + 8]
+                bus = entry.path[dir_length + 9:dir_length + 12]
                 if team not in self.schedules:
                     self.schedules[team] = {}
                 if post not in self.schedules[team]:
@@ -52,8 +52,11 @@ class data_analyzer:
                     self.schedules[team][post][bus] = []
                 with open(entry.path, 'r', encoding='utf16') as file:
                     csv_reader = csv.reader(file)
+                    nr_of_lines = 0
                     for row in csv_reader:
-                        self.schedules[team][post][bus].append(row)
+                        if nr_of_lines > 0:
+                            self.schedules[team][post][bus].append(row)
+                        nr_of_lines += 1
 
     def read_bus_data(self, bus_filename):
         with open(bus_filename, 'r', encoding='utf16') as file:

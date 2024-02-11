@@ -25,6 +25,43 @@ class TestDataAnalyzerClass:
             }
         }
 
+    @pytest.fixture
+    def expected_schedules(self):
+        return {
+            '1000': {
+                '01': {
+                    '666': [
+                        ['1', 'BLBL', 'TP-OST', '53460'],
+                        ['2', 'BLBL', 'TP-OST', '54060'],
+                        ['3', 'BLBL', 'TP-OST', '54660']
+                    ],
+                    '777': [
+                        ['4', 'LBLB', 'TP-TSO', '15360'],
+                        ['5', 'LBLB', 'TP-TSO', '18960'],
+                        ['6', 'LBLB', 'TP-TSO', '22560']
+                    ]
+                }
+            },
+            '1001': {
+                '02': {
+                    '888': [
+                        ['7', 'BBBB', 'TP-STO', '67140'],
+                        ['8', 'BBBB', 'TP-STO', '67500'],
+                        ['9', 'BBBB', 'TP-STO', '67860']
+                    ]
+                }
+            },
+            '1002': {
+                '03': {
+                    '666': [
+                        ['1', 'BLBL', 'TP-OST', '60660'],
+                        ['2', 'BLBL', 'TP-OST', '61260'],
+                        ['3', 'BLBL', 'TP-OST', '61860']
+                    ]
+                }
+            }
+        }
+
     def test_reading_bus_data(self, expected_bus_locations):
         da = data_analyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
@@ -35,6 +72,20 @@ class TestDataAnalyzerClass:
                 assert vehicle in data_dict[bus]
                 for i in range(len(expected_bus_locations[bus][vehicle])):
                     assert expected_bus_locations[bus][vehicle][i] == data_dict[bus][vehicle][i]
+
+    def test_reading_schedules_data(self, expected_schedules):
+        da = data_analyzer()
+        da.read_schedules_data('test_files/schedules', 20)
+        data_dict = da.schedules
+        for team in expected_schedules:
+            assert team in data_dict
+            for post in expected_schedules[team]:
+                assert post in data_dict[team]
+                for bus in expected_schedules[team][post]:
+                    assert bus in data_dict[team][post]
+                    for i in range(len(expected_schedules[team][post][bus])):
+                        assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
+
 
     def test_nr_of_overspeeding_busses(self):
         da = data_analyzer()

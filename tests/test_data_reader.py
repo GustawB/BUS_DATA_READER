@@ -526,7 +526,7 @@ class TestDataReaderClass:
                         assert bus in data_dict[team][post]
                         for i in range(len(expected_schedules[team][post][bus])):
                             assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
-            dr.dump_schedules('test_files')
+            dr.dump_schedules('test_files/schedules')
 
     def test_bus_routes_data_reading(self,mock_bus_routes,
                                      expected_bus_routes):
