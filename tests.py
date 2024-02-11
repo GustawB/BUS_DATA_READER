@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry
+from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, bus_route_entry
 from data_reader import data_reader
 
 
@@ -317,6 +317,54 @@ def mock_schedules_1002_03_666():
 
 
 @pytest.fixture
+def mock_bus_routes():
+    return {
+        "result": {
+            "666": {
+                "TP-OST": {
+                    "1": {
+                        "odleglosc": 100,
+                        "ulica_id": "2000",
+                        "nr_zespolu": "1000",
+                        "typ": "2",
+                        "nr_przystanku": "01"
+                    },
+                    "2": {
+                        "odleglosc": 3000,
+                        "ulica_id": "2002",
+                        "nr_zespolu": "1002",
+                        "typ": "1",
+                        "nr_przystanku": "03"
+                    }
+                }
+            },
+            "777": {
+                "TP-TSO": {
+                    "1": {
+                        "odleglosc": 0,
+                        "ulica_id": "2000",
+                        "nr_zespolu": "1000",
+                        "typ": "7",
+                        "nr_przystanku": "01"
+                    }
+                }
+            },
+            "888": {
+                "TP-STO": {
+                    "1": {
+                        "odleglosc": 0,
+                        "ulica_id": "2001",
+                        "nr_zespolu": "1001",
+                        "typ": "9",
+                        "nr_przystanku": "02"
+                    }
+                }
+            }
+        }
+    }
+
+
+@pytest.fixture
 def expected_dict_1():
     return {
         '666': [ZTM_bus('666', '21.000293', '52.206126', '2137', '5', '2024-02-10 19:29:38'),
@@ -380,6 +428,32 @@ def expected_schedules():
                 "666": [bus_schedule_entry('1', 'BLBL', 'TP-OST', '16:51:00'),
                         bus_schedule_entry('2', 'BLBL', 'TP-OST', '17:01:00'),
                         bus_schedule_entry('3', 'BLBL', 'TP-OST', '17:11:00')]
+            }
+        }
+    }
+
+
+@pytest.fixture
+def expected_bus_routes():
+    return {
+        "666": {
+            "TP-OST": {
+                1: bus_route_entry("666", "TP-OST",
+                                   "2000", "1000", "2", "01"),
+                2: bus_route_entry("666", "TP-OST",
+                                   "2002", "1002", "1", "03")
+            }
+        },
+        "777": {
+            "TP-TSO": {
+                1: bus_route_entry("777", "TP-TSO",
+                                   "2000", "1000", "7", "01")
+            }
+        },
+        "888": {
+            "TP-STO": {
+                1: bus_route_entry("888", "TP-STO",
+                                   "2001", "1001", "9", "02")
             }
         }
     }
@@ -466,4 +540,20 @@ def test_schedules_data_reading(mock_schedules_1000_01_666,
                     for i in range(len(expected_schedules[team][post][bus])):
                         assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
 
+
+def test_bus_routes_data_reading(mock_bus_routes,
+                                 expected_bus_routes):
+    with patch('data_reader.requests.get') as mock_get:
+        mock_get.return_value = MagicMock(status_code=200)
+        mock_get.return_value.json.return_value = mock_bus_routes
+        dr = data_reader('random_apikey')
+        dr.get_bus_routes()
+        data_dict = dr.bus_routes
+        for bus in expected_bus_routes:
+            assert bus in data_dict
+            for route in expected_bus_routes[bus]:
+                assert route in data_dict[bus]
+                for index in expected_bus_routes[bus][route]:
+                    assert index in data_dict[bus][route]
+                    assert expected_bus_routes[bus][route][index] == data_dict[bus][route][index]
 

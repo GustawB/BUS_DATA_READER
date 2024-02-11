@@ -164,9 +164,8 @@ class data_reader:
                             csv_writer.writerow(data.to_csv())
 
     def get_bus_routes(self):
-        response = requests.post(
+        response = requests.get(
             'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.api_key)
-        print('sex')
         for bus_nr in response.json()['result']:
             for route_type in response.json()['result'][bus_nr]:
                 max_nr = 0

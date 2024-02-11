@@ -185,6 +185,16 @@ class bus_route_entry:
         self.type = type
         self.bus_stop_nr = bus_stop_nr
 
+    def __eq__(self, other):
+        return (
+            self.bus_nr == other.bus_nr and
+            self.route_code == other.route_code and
+            self.street_id == other.street_id and
+            self.team_nr == other.team_nr and
+            self.type == other.type and
+            self.bus_stop_nr == other.bus_stop_nr
+        )
+
     def to_csv(self):
         result = [self.bus_nr, self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
         return result
