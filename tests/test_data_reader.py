@@ -3,8 +3,8 @@ import os.path
 import pytest
 from unittest.mock import MagicMock, patch
 
-from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, bus_route_entry
-from data_reader import data_reader
+from data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
+from data_reader import DataReader
 
 
 class TestDataReaderClass:
@@ -78,7 +78,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_bus_stop_data(self):
+    def mock_BusStop_data(self):
         return {
             "result": [
                 {
@@ -121,7 +121,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_bus_for_stops_data_1000_01(self):
+    def mock_BusForStops_data_1000_01(self):
         return {
             "result": [
                 {
@@ -138,7 +138,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_bus_for_stops_data_1001_02(self):
+    def mock_BusForStops_data_1001_02(self):
         return {
             "result": [
                 {
@@ -150,7 +150,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_bus_for_stops_data_1002_03(self):
+    def mock_BusForStops_data_1002_03(self):
         return {
             "result": [
                 {
@@ -359,40 +359,40 @@ class TestDataReaderClass:
     @pytest.fixture
     def expected_bus_locations(self):
         return {
-            '666': [ZTM_bus('666', '21.000293', '52.206126', '2137', '5', '2024-02-10 19:29:38'),
-                    ZTM_bus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:15:21'),
-                    ZTM_bus('666', '21.001999', '52.219890', '2137', '5', '2024-02-10 19:30:41'),
-                    ZTM_bus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:17:21')],
-            '777': [ZTM_bus('777', '21.1035602', '52.1273747', '4220', '7', '2024-02-10 19:39:38'),
-                    ZTM_bus('777', '21.1039602', '52.1293747', '4220', '7', '2024-02-10 19:39:48')],
-            '888': [ZTM_bus('888', '20.995331', '52.186255', '6969', '1', '2024-02-10 19:15:21'),
-                    ZTM_bus('888', '20.995331', '52.1776255', '6969', '1', '2024-02-10 19:16:01')]
+            '666': [ZTMBus('666', '21.000293', '52.206126', '2137', '5', '2024-02-10 19:29:38'),
+                    ZTMBus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:15:21'),
+                    ZTMBus('666', '21.001999', '52.219890', '2137', '5', '2024-02-10 19:30:41'),
+                    ZTMBus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:17:21')],
+            '777': [ZTMBus('777', '21.1035602', '52.1273747', '4220', '7', '2024-02-10 19:39:38'),
+                    ZTMBus('777', '21.1039602', '52.1293747', '4220', '7', '2024-02-10 19:39:48')],
+            '888': [ZTMBus('888', '20.995331', '52.186255', '6969', '1', '2024-02-10 19:15:21'),
+                    ZTMBus('888', '20.995331', '52.1776255', '6969', '1', '2024-02-10 19:16:01')]
         }
 
     @pytest.fixture
     def expected_dict_2(self):
         return {
-            '666': [ZTM_bus('666', '21.001999', '52.219890', '2137', '5', '2024-02-10 19:30:41'),
-                    ZTM_bus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:17:21')],
-            '777': [ZTM_bus('777', '21.1039602', '52.1293747', '4220', '7', '2024-02-10 19:39:48')],
-            '888': [ZTM_bus('888', '20.995331', '52.1776255', '6969', '1', '2024-02-10 19:16:01')]
+            '666': [ZTMBus('666', '21.001999', '52.219890', '2137', '5', '2024-02-10 19:30:41'),
+                    ZTMBus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:17:21')],
+            '777': [ZTMBus('777', '21.1039602', '52.1293747', '4220', '7', '2024-02-10 19:39:48')],
+            '888': [ZTMBus('888', '20.995331', '52.1776255', '6969', '1', '2024-02-10 19:16:01')]
         }
 
     @pytest.fixture
-    def expected_bus_stop(self):
+    def expected_BusStop(self):
         return {
-            "BLBL": [bus_stop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.219890)],
-            "LBLB": [bus_stop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)],
-            "BYYL": [bus_stop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)]
+            "BLBL": [BusStop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.219890)],
+            "LBLB": [BusStop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)],
+            "BYYL": [BusStop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)]
         }
 
     @pytest.fixture
-    def expected_bus_for_stop(self):
+    def expected_BusForStop(self):
         return {
-            '1000': [bus_for_stop('1000', '01', '666'),
-                     bus_for_stop('1000', '01', '777')],
-            '1001': [bus_for_stop('1001', '02', '888')],
-            '1002': [bus_for_stop('1002', '03', '666')]
+            '1000': [BusForStop('1000', '01', '666'),
+                     BusForStop('1000', '01', '777')],
+            '1001': [BusForStop('1001', '02', '888')],
+            '1002': [BusForStop('1002', '03', '666')]
         }
 
     @pytest.fixture
@@ -400,26 +400,26 @@ class TestDataReaderClass:
         return {
             "1000": {
                 "01": {
-                    "666": [bus_schedule_entry('1', 'BLBL', 'TP-OST', '14:51:00'),
-                            bus_schedule_entry('2', 'BLBL', 'TP-OST', '15:01:00'),
-                            bus_schedule_entry('3', 'BLBL', 'TP-OST', '15:11:00')],
-                    "777": [bus_schedule_entry('4', 'LBLB', 'TP-TSO', '04:16:00'),
-                            bus_schedule_entry('5', 'LBLB', 'TP-TSO', '05:16:00'),
-                            bus_schedule_entry('6', 'LBLB', 'TP-TSO', '06:16:00'), ]
+                    "666": [BusScheduleEntry('1', 'BLBL', 'TP-OST', '14:51:00'),
+                            BusScheduleEntry('2', 'BLBL', 'TP-OST', '15:01:00'),
+                            BusScheduleEntry('3', 'BLBL', 'TP-OST', '15:11:00')],
+                    "777": [BusScheduleEntry('4', 'LBLB', 'TP-TSO', '04:16:00'),
+                            BusScheduleEntry('5', 'LBLB', 'TP-TSO', '05:16:00'),
+                            BusScheduleEntry('6', 'LBLB', 'TP-TSO', '06:16:00'), ]
                 }
             },
             "1001": {
                 "02": {
-                    "888": [bus_schedule_entry('7', 'BBBB', 'TP-STO', '18:39:00'),
-                            bus_schedule_entry('8', 'BBBB', 'TP-STO', '18:45:00'),
-                            bus_schedule_entry('9', 'BBBB', 'TP-STO', '18:51:00')]
+                    "888": [BusScheduleEntry('7', 'BBBB', 'TP-STO', '18:39:00'),
+                            BusScheduleEntry('8', 'BBBB', 'TP-STO', '18:45:00'),
+                            BusScheduleEntry('9', 'BBBB', 'TP-STO', '18:51:00')]
                 }
             },
             "1002": {
                 "03": {
-                    "666": [bus_schedule_entry('1', 'BLBL', 'TP-OST', '16:51:00'),
-                            bus_schedule_entry('2', 'BLBL', 'TP-OST', '17:01:00'),
-                            bus_schedule_entry('3', 'BLBL', 'TP-OST', '17:11:00')]
+                    "666": [BusScheduleEntry('1', 'BLBL', 'TP-OST', '16:51:00'),
+                            BusScheduleEntry('2', 'BLBL', 'TP-OST', '17:01:00'),
+                            BusScheduleEntry('3', 'BLBL', 'TP-OST', '17:11:00')]
                 }
             }
         }
@@ -429,21 +429,21 @@ class TestDataReaderClass:
         return {
             "666": {
                 "TP-OST": {
-                    1: bus_route_entry("666", "TP-OST",
+                    1: BusRouteEntry("666", "TP-OST",
                                        "2000", "1000", "2", "01"),
-                    2: bus_route_entry("666", "TP-OST",
+                    2: BusRouteEntry("666", "TP-OST",
                                        "2002", "1002", "1", "03")
                 }
             },
             "777": {
                 "TP-TSO": {
-                    1: bus_route_entry("777", "TP-TSO",
+                    1: BusRouteEntry("777", "TP-TSO",
                                        "2000", "1000", "7", "01")
                 }
             },
             "888": {
                 "TP-STO": {
-                    1: bus_route_entry("888", "TP-STO",
+                    1: BusRouteEntry("888", "TP-STO",
                                        "2001", "1001", "9", "02")
                 }
             }
@@ -452,10 +452,10 @@ class TestDataReaderClass:
     def test_bus_data_reading(self, mock_bus_locations_1,
                               mock_bus_locations_2,
                               expected_bus_locations):
-        with patch('data_reader.requests.get') as mock_get:
+        with patch('DataReader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_locations_1
-            dr = data_reader('random_apikey')
+            dr = DataReader('random_apikey')
             dr.get_bus_data(1, 1)
             mock_get.return_value.json.return_value = mock_bus_locations_2
             dr.get_bus_data(1, 1)
@@ -470,38 +470,38 @@ class TestDataReaderClass:
                 os.mkdir('test_files')
             dr.dump_bus_data('test_files/test_bus_data.csv')
 
-    def test_bus_stop_data_reading(self, mock_bus_stop_data, expected_bus_stop):
-        with patch('data_reader.requests.get') as mock_get:
+    def test_BusStop_data_reading(self, mock_BusStop_data, expected_BusStop):
+        with patch('DataReader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
-            mock_get.return_value.json.return_value = mock_bus_stop_data
-            dr = data_reader('random_apikey')
+            mock_get.return_value.json.return_value = mock_BusStop_data
+            dr = DataReader('random_apikey')
             dr.get_stops_data()
-            data_dict = dr.bus_stop_data
-            for key in expected_bus_stop:
+            data_dict = dr.BusStop_data
+            for key in expected_BusStop:
                 assert key in data_dict
-                for i in range(len(expected_bus_stop[key])):
-                    assert expected_bus_stop[key][i] == data_dict[key][i]
+                for i in range(len(expected_BusStop[key])):
+                    assert expected_BusStop[key][i] == data_dict[key][i]
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')
-            dr.dump_stops_data('test_files/test_bus_stops.csv')
+            dr.dump_stops_data('test_files/test_BusStops.csv')
 
-    def test_bus_for_stops_data_reading(self, mock_bus_for_stops_data_1000_01,
-                                        mock_bus_for_stops_data_1001_02,
-                                        mock_bus_for_stops_data_1002_03,
-                                        expected_bus_for_stop):
-        with patch('data_reader.requests.get') as mock_get:
+    def test_BusForStops_data_reading(self, mock_BusForStops_data_1000_01,
+                                        mock_BusForStops_data_1001_02,
+                                        mock_BusForStops_data_1002_03,
+                                        expected_BusForStop):
+        with patch('DataReader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
-            mock_get.return_value.json.side_effect = [mock_bus_for_stops_data_1000_01,
-                                                      mock_bus_for_stops_data_1001_02,
-                                                      mock_bus_for_stops_data_1002_03]
-            dr = data_reader('random_apikey')
-            dr.get_busses_for_stops('test_files/test_bus_stops.csv')
+            mock_get.return_value.json.side_effect = [mock_BusForStops_data_1000_01,
+                                                      mock_BusForStops_data_1001_02,
+                                                      mock_BusForStops_data_1002_03]
+            dr = DataReader('random_apikey')
+            dr.get_busses_for_stops('test_files/test_BusStops.csv')
             data_dict = dr.busses_for_stops
             assert len(data_dict) == 3
-            for key in expected_bus_for_stop:
+            for key in expected_BusForStop:
                 assert key in data_dict
-                for i in range(len(expected_bus_for_stop[key])):
-                    assert expected_bus_for_stop[key][i] == data_dict[key][i]
+                for i in range(len(expected_BusForStop[key])):
+                    assert expected_BusForStop[key][i] == data_dict[key][i]
             dr.dump_busses_for_stops('test_files/test_busses_for_stops.csv')
 
     def test_schedules_data_reading(self, mock_schedules_1000_01_666,
@@ -509,13 +509,13 @@ class TestDataReaderClass:
                                     mock_schedules_1001_02_888,
                                     mock_schedules_1002_03_666,
                                     expected_schedules):
-        with patch('data_reader.requests.get') as mock_get:
+        with patch('DataReader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.side_effect = [mock_schedules_1000_01_666,
                                                       mock_schedules_1000_01_777,
                                                       mock_schedules_1001_02_888,
                                                       mock_schedules_1002_03_666]
-            dr = data_reader('random_apikey')
+            dr = DataReader('random_apikey')
             dr.get_bus_schedules('test_files/test_busses_for_stops.csv')
             data_dict = dr.schedules
             for team in expected_schedules:
@@ -530,10 +530,10 @@ class TestDataReaderClass:
 
     def test_bus_routes_data_reading(self,mock_bus_routes,
                                      expected_bus_routes):
-        with patch('data_reader.requests.get') as mock_get:
+        with patch('DataReader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_routes
-            dr = data_reader('random_apikey')
+            dr = DataReader('random_apikey')
             dr.get_bus_routes()
             data_dict = dr.bus_routes
             for bus in expected_bus_routes:
@@ -548,7 +548,7 @@ class TestDataReaderClass:
             dr.dump_bus_routes('test_files/test_bus_routes.csv')
 
     def test_time_parser(self):
-        dr = data_reader('random_apikey')
+        dr = DataReader('random_apikey')
         assert dr.time_parser('24:00:00') == '00:00:00'
         assert dr.time_parser('25:00:00') == '01:00:00'
         assert dr.time_parser('26:00:00') == '02:00:00'

@@ -1,12 +1,13 @@
 import time
 import csv
 import os
-
-from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, bus_route_entry
 import requests
 
+from data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
+import datetime
 
-class data_reader:
+
+class DataReader:
     api_key: str
     bus_data: dict
     bus_stop_data: dict
@@ -50,7 +51,7 @@ class data_reader:
             for j in range(len(response.json()['result'])):
                 helper = response.json()['result'][j]
                 time_data = self.time_parser(helper['Time'])
-                bus = ZTM_bus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
+                bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                               helper['Brigade'], time_data)
 
                 if helper['Lines'] in self.bus_data:
@@ -60,15 +61,20 @@ class data_reader:
 
             time.sleep(sample_length)
 
-    def dump_bus_data(self, file_to_dump):
+    def dump_bus_data(self, file_to_dump, time_offset=-1):
+        time_data = datetime.datetime.now(datetime.timezone.utc)
+        time_in_sec = (time_data.hour + 1) * 60
+        time_in_sec += time_data.minute
+        time_in_sec *= 60
+        time_in_sec += int(time_data.second)
         data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
-        print('gex')
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
-            print('dex')
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for key in self.bus_data:
                 for value in self.bus_data[key]:
+                    if 0 < time_offset < abs(value.time_data - time_in_sec):
+                        continue
                     value.location.find_street()
                     csv_writer.writerow(value.to_csv())
 
@@ -76,7 +82,7 @@ class data_reader:
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
         for data in response.json()['result']:
-            bs = bus_stop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
+            bs = BusStop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
                           data['values'][1]['value'], data['values'][6]['value'],
                           float(data['values'][5]['value']), float(data['values'][4]['value']))
 
@@ -107,7 +113,7 @@ class data_reader:
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=88cd555f-6f31-43ca-9de4-66c479ad5942&busstopId=' +
                         line[2] + '&busstopNr=' + line[3] + '&apikey=' + self.api_key)
                     for data in response.json()['result']:
-                        bus = bus_for_stop(line[2], line[3], data['values'][0]['value'])
+                        bus = BusForStop(line[2], line[3], data['values'][0]['value'])
                         if len(bus.bus) == 3:
                             if bus.team in self.busses_for_stops:
                                 self.busses_for_stops[bus.team].append(bus)
@@ -135,7 +141,7 @@ class data_reader:
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.api_key)
                     for data in response.json()['result']:
                         time_data = self.time_parser(data['values'][5]['value'])
-                        scl = bus_schedule_entry(data['values'][2]['value'], data['values'][3]['value'],
+                        scl = BusScheduleEntry(data['values'][2]['value'], data['values'][3]['value'],
                                                  data['values'][4]['value'], time_data)
                         if line[0] in self.schedules:
                             if line[1] in self.schedules[line[0]]:
@@ -179,7 +185,7 @@ class data_reader:
                 for nr in response.json()['result'][bus_nr][route_type]:
                     helper = response.json()['result'][bus_nr][route_type][nr]
                     self.bus_routes[bus_nr][route_type][int(nr)] = (
-                        bus_route_entry(bus_nr, route_type, helper['ulica_id'], helper['nr_zespolu'],
+                        BusRouteEntry(bus_nr, route_type, helper['ulica_id'], helper['nr_zespolu'],
                                         helper['typ'], helper['nr_przystanku']))
 
     def dump_bus_routes(self, file_to_dump):

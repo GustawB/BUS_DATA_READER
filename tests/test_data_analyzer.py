@@ -1,7 +1,7 @@
 import pytest
 
-from data_analyzer import data_analyzer
-from data_holders import ZTM_bus, bus_stop, bus_route_entry
+from data_analyzer import DataAnalyzer
+from data_holders import ZTMBus, BusStop, BusRouteEntry
 
 
 class TestDataAnalyzerClass:
@@ -9,19 +9,19 @@ class TestDataAnalyzerClass:
     def expected_bus_locations(self):
         return {
             '666': {
-                '2137': [ZTM_bus('666', '21.000293', '52.206126', '2137', '5', '2024-02-10 19:29:38'),
-                         ZTM_bus('666', '21.001999', '52.219890', '2137', '5', '2024-02-10 19:30:41')],
-                '5471': [ZTM_bus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:15:21'),
-                         ZTM_bus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:17:21')]
+                '2137': [ZTMBus('666', '21.000293', '52.206126', '2137', '5', '2024-02-10 19:29:38'),
+                         ZTMBus('666', '21.001999', '52.219890', '2137', '5', '2024-02-10 19:30:41')],
+                '5471': [ZTMBus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:15:21'),
+                         ZTMBus('666', '21.114995', '52.233576', '5471', '3', '2024-02-10 18:17:21')]
             },
 
             '777': {
-                '4220': [ZTM_bus('777', '21.1035602', '52.1273747', '4220', '7', '2024-02-10 19:39:38'),
-                         ZTM_bus('777', '21.1039602', '52.1293747', '4220', '7', '2024-02-10 19:39:48')]
+                '4220': [ZTMBus('777', '21.1035602', '52.1273747', '4220', '7', '2024-02-10 19:39:38'),
+                         ZTMBus('777', '21.1039602', '52.1293747', '4220', '7', '2024-02-10 19:39:48')]
             },
             '888': {
-                '6969': [ZTM_bus('888', '20.995331', '52.186255', '6969', '1', '2024-02-10 19:15:21'),
-                         ZTM_bus('888', '20.995331', '52.1776255', '6969', '1', '2024-02-10 19:16:01')]
+                '6969': [ZTMBus('888', '20.995331', '52.186255', '6969', '1', '2024-02-10 19:15:21'),
+                         ZTMBus('888', '20.995331', '52.1776255', '6969', '1', '2024-02-10 19:16:01')]
             }
         }
 
@@ -63,16 +63,16 @@ class TestDataAnalyzerClass:
         }
 
     @pytest.fixture
-    def expected_bus_stops(self):
+    def expected_BusStops(self):
         return {
             '1000': {
-                '01': bus_stop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.21989)
+                '01': BusStop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.21989)
             },
             '1001': {
-                '02': bus_stop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)
+                '02': BusStop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)
             },
             '1002': {
-                '03': bus_stop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)
+                '03': BusStop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)
             }
         }
 
@@ -81,24 +81,24 @@ class TestDataAnalyzerClass:
         return {
             '666': {
                 'TP-OST': [
-                    bus_route_entry('666', 'TP-OST', '2000', '1000', '2', '01'),
-                    bus_route_entry('666', 'TP-OST', '2002', '1002', '1', '03')
+                    BusRouteEntry('666', 'TP-OST', '2000', '1000', '2', '01'),
+                    BusRouteEntry('666', 'TP-OST', '2002', '1002', '1', '03')
                 ]
             },
             '777': {
                 'TP-TSO': [
-                    bus_route_entry('777', 'TP-TSO', '2000', '1000', '7', '01')
+                    BusRouteEntry('777', 'TP-TSO', '2000', '1000', '7', '01')
                 ]
             },
             '888': {
                 'TP-STO': [
-                    bus_route_entry('888', 'TP-STO', '2001', '1001', '9', '02')
+                    BusRouteEntry('888', 'TP-STO', '2001', '1001', '9', '02')
                 ]
             }
         }
 
     def test_reading_bus_data(self, expected_bus_locations):
-        da = data_analyzer()
+        da = DataAnalyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
         data_dict = da.bus_data
         for bus in expected_bus_locations:
@@ -109,7 +109,7 @@ class TestDataAnalyzerClass:
                     assert expected_bus_locations[bus][vehicle][i] == data_dict[bus][vehicle][i]
 
     def test_reading_schedules_data(self, expected_schedules):
-        da = data_analyzer()
+        da = DataAnalyzer()
         da.read_schedules_data('test_files/schedules', 20)
         data_dict = da.schedules
         for team in expected_schedules:
@@ -121,18 +121,18 @@ class TestDataAnalyzerClass:
                     for i in range(len(expected_schedules[team][post][bus])):
                         assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
 
-    def test_reading_bus_stop_data(self, expected_bus_stops):
-        da = data_analyzer()
-        da.read_bus_stop_data('test_files/test_bus_stops.csv')
-        data_dict = da.bus_stop_data
-        for team in expected_bus_stops:
+    def test_reading_BusStop_data(self, expected_BusStops):
+        da = DataAnalyzer()
+        da.read_BusStop_data('test_files/test_BusStops.csv')
+        data_dict = da.BusStop_data
+        for team in expected_BusStops:
             assert team in data_dict
-            for post in expected_bus_stops[team]:
+            for post in expected_BusStops[team]:
                 assert post in data_dict[team]
-                assert expected_bus_stops[team][post] == data_dict[team][post]
+                assert expected_BusStops[team][post] == data_dict[team][post]
 
     def test_reading_bus_routes_data(self, expected_bus_routes):
-        da = data_analyzer()
+        da = DataAnalyzer()
         da.read_bus_routes_data('test_files/test_bus_routes.csv')
         data_dict = da.bus_routes_data
         for bus in expected_bus_routes:
@@ -143,7 +143,7 @@ class TestDataAnalyzerClass:
                     assert expected_bus_routes[bus][route][i] == data_dict[bus][route][i]
 
     def test_nr_of_overspeeding_busses(self):
-        da = data_analyzer()
+        da = DataAnalyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
         assert da.calc_nr_of_overspeeding_busses() == 3
         assert da.nr_of_invalid_speeds == 1
