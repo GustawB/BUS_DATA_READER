@@ -1,7 +1,7 @@
 import pytest
 
 from data_analyzer import data_analyzer
-from data_holders import ZTM_bus
+from data_holders import ZTM_bus, bus_stop
 
 
 class TestDataAnalyzerClass:
@@ -62,6 +62,20 @@ class TestDataAnalyzerClass:
             }
         }
 
+    @pytest.fixture
+    def expected_bus_stops(self):
+        return {
+            '1000': {
+                '01': bus_stop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.21989)
+            },
+            '1001': {
+                '02': bus_stop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)
+            },
+            '1002': {
+                '03': bus_stop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)
+            }
+        }
+
     def test_reading_bus_data(self, expected_bus_locations):
         da = data_analyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
@@ -85,6 +99,16 @@ class TestDataAnalyzerClass:
                     assert bus in data_dict[team][post]
                     for i in range(len(expected_schedules[team][post][bus])):
                         assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
+
+    def test_reading_bus_stop_data(self, expected_bus_stops):
+        da = data_analyzer()
+        da.read_bus_stop_data('test_files/test_bus_stops.csv')
+        data_dict = da.bus_stop_data
+        for team in expected_bus_stops:
+            assert team in data_dict
+            for post in expected_bus_stops[team]:
+                assert post in data_dict[team]
+                assert expected_bus_stops[team][post] == data_dict[team][post]
 
 
     def test_nr_of_overspeeding_busses(self):
