@@ -7,7 +7,7 @@ from data_holders import ZTM_bus, bus_stop, bus_for_stop, bus_schedule_entry, bu
 from data_reader import data_reader
 
 
-class TestClass:
+class TestDataReaderClass:
     @pytest.fixture
     def mock_bus_locations_1(self):
         return {
@@ -468,7 +468,7 @@ class TestClass:
                     assert expected_bus_locations[bus][i] == data_dict[bus][i]
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')
-            dr.dump_bus_data('test_files/bus_data.csv')
+            dr.dump_bus_data('test_files/test_bus_data.csv')
 
     def test_bus_stop_data_reading(self, mock_bus_stop_data, expected_bus_stop):
         with patch('data_reader.requests.get') as mock_get:
@@ -545,7 +545,7 @@ class TestClass:
                         assert expected_bus_routes[bus][route][index] == data_dict[bus][route][index]
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')
-            dr.dump_bus_routes('test_files/bus_routes.csv')
+            dr.dump_bus_routes('test_files/test_bus_routes.csv')
 
     def test_time_parser(self):
         dr = data_reader('random_apikey')

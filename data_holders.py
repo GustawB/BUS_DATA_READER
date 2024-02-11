@@ -17,9 +17,9 @@ class Location:
     def distance(self, other):
         r = 6371  # km
         p = pi / 180
-        a = (0.5 - cos((other.latitude - self.latitude) * p) / 2 + cos(self.latitude * p) * cos(other.latitude * p) *
-             (1 - cos((other.longitude - self.longitude) * p)) / 2)
-        return 2 * r * asin(sqrt(a))
+        a = (0.5 - cos((other.longitude - self.longitude) * p) / 2 + cos(self.longitude * p) * cos(other.longitude * p) *
+             (1 - cos((other.latitude - self.latitude) * p)) / 2)
+        return 2 * r * asin(sqrt(a)) * 1000
 
     def __eq__(self, other):
         dist = self.distance(other)
@@ -57,17 +57,21 @@ class ZTM_bus:
     time_data: int
     street_name: str
 
-    def __init__(self, line, longitude, latitude, vehicle_number, brigade, time_data, street_name=''):
+    def __init__(self, line, longitude, latitude, vehicle_number, brigade, time_data, should_convert_time=True, street_name=''):
         self.line = line
         self.location = Location(float(longitude), float(latitude), street_name)
         self.vehicle_number = vehicle_number
         self.brigade = brigade
-        time_helper = time_data[11:]
-        time_sec = int(time_helper[:2]) * 60
-        time_sec += int(time_helper[3:5])
-        time_sec *= 60
-        time_sec += int(time_helper[6:])
-        self.time_data = time_sec
+        if should_convert_time:
+            time_helper = time_data[11:]
+            time_sec = int(time_helper[:2]) * 60
+            time_sec += int(time_helper[3:5])
+            time_sec *= 60
+            time_sec += int(time_helper[6:])
+            self.time_data = time_sec
+        else:
+            self.time_data = int(time_data)
+
 
     def __hash__(self):
         return hash((self.line, self.location, self.vehicle_number, self.brigade, self.time_data))

@@ -65,7 +65,7 @@ class data_analyzer:
                     street_name = row[3]
                     if street_name[:5] == 'ulica':
                         street_name = street_name[6:]
-                    bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[4], row[5], row[6], street_name)
+                    bus = ZTM_bus(row[0], float(row[1]), float(row[2]), row[4], row[5], row[6], False, street_name)
                     if row[0] in self.bus_data:
                         if row[4] in self.bus_data[row[0]]:
                             self.bus_data[row[0]][row[4]].append(bus)
@@ -103,12 +103,12 @@ class data_analyzer:
     def normalise_avg_speed(self, dist, prev_bus, next_bus):
         local_length = next_bus.time_data - prev_bus.time_data
         # print(local_length)
-        if local_length.total_seconds() <= 0:
+        if local_length <= 0:
             # print(str(prev_bus.time_data) + ' ' + str(next_bus.time_data))
             self.nr_of_invalid_times += 1
             return -1
-        speed = dist / local_length.total_seconds() * 3600 / 1000
-        if speed > 120 or speed < 0:
+        speed = dist / local_length * 3600 / 1000
+        if speed >= 120 or speed <= 0:
             self.nr_of_invalid_speeds += 1
             return -1
         return speed
