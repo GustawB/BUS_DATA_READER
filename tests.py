@@ -165,7 +165,7 @@ def mock_bus_for_stops_data_1002_03():
 
 
 @pytest.fixture
-def mock_bus_stopazasdadasdas_data():
+def mock_schedules_1000_01_666():
     return {
         "result": [
             {
@@ -175,7 +175,7 @@ def mock_bus_stopazasdadasdas_data():
                     {"value": "1", "key": "brygada"},
                     {"value": "BLBL", "key": "kierunek"},
                     {"value": "TP-OST", "key": "trasa"},
-                    {"value": "04:51:00", "key": "czas"},
+                    {"value": "14:51:00", "key": "czas"},
                 ]
             },
             {
@@ -183,9 +183,9 @@ def mock_bus_stopazasdadasdas_data():
                     {"value": "null", "key": "symbol_2"},
                     {"value": "null", "key": "symbol_1"},
                     {"value": "2", "key": "brygada"},
-                    {"value": "LBLB", "key": "kierunek"},
-                    {"value": "TP-TSO", "key": "trasa"},
-                    {"value": "04:51:00", "key": "czas"},
+                    {"value": "BLBL", "key": "kierunek"},
+                    {"value": "TP-OST", "key": "trasa"},
+                    {"value": "15:01:00", "key": "czas"},
                 ]
             },
             {
@@ -193,9 +193,123 @@ def mock_bus_stopazasdadasdas_data():
                     {"value": "null", "key": "symbol_2"},
                     {"value": "null", "key": "symbol_1"},
                     {"value": "3", "key": "brygada"},
-                    {"value": "YYY", "key": "kierunek"},
+                    {"value": "BLBL", "key": "kierunek"},
+                    {"value": "OST", "key": "trasa"},
+                    {"value": "15:11:00", "key": "czas"},
+                ]
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_schedules_1000_01_777():
+    return {
+        "result": [
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "4", "key": "brygada"},
+                    {"value": "LBLB", "key": "kierunek"},
+                    {"value": "TP-TSO", "key": "trasa"},
+                    {"value": "04:16:00", "key": "czas"},
+                ]
+            },
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "5", "key": "brygada"},
+                    {"value": "LBLB", "key": "kierunek"},
+                    {"value": "TP-TSO", "key": "trasa"},
+                    {"value": "05:16:00", "key": "czas"},
+                ]
+            },
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "6", "key": "brygada"},
+                    {"value": "LBLB", "key": "kierunek"},
+                    {"value": "TP-TSO", "key": "trasa"},
+                    {"value": "06:16:00", "key": "czas"},
+                ]
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_schedules_1001_02_888():
+    return {
+        "result": [
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "7", "key": "brygada"},
+                    {"value": "BBBB", "key": "kierunek"},
                     {"value": "TP-STO", "key": "trasa"},
-                    {"value": "04:51:00", "key": "czas"},
+                    {"value": "18:39:00", "key": "czas"},
+                ]
+            },
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "8", "key": "brygada"},
+                    {"value": "BBBB", "key": "kierunek"},
+                    {"value": "TP-STO", "key": "trasa"},
+                    {"value": "18:45:00", "key": "czas"},
+                ]
+            },
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "9", "key": "brygada"},
+                    {"value": "BBBB", "key": "kierunek"},
+                    {"value": "TP-STO", "key": "trasa"},
+                    {"value": "18:51:00", "key": "czas"},
+                ]
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_schedules_1002_03_6():
+    return {
+        "result": [
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "1", "key": "brygada"},
+                    {"value": "BLBL", "key": "kierunek"},
+                    {"value": "TP-OST", "key": "trasa"},
+                    {"value": "16:51:00", "key": "czas"},
+                ]
+            },
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "2", "key": "brygada"},
+                    {"value": "BLBL", "key": "kierunek"},
+                    {"value": "TP-OST", "key": "trasa"},
+                    {"value": "17:01:00", "key": "czas"},
+                ]
+            },
+            {
+                "values": [
+                    {"value": "null", "key": "symbol_2"},
+                    {"value": "null", "key": "symbol_1"},
+                    {"value": "3", "key": "brygada"},
+                    {"value": "BLBL", "key": "kierunek"},
+                    {"value": "OST", "key": "trasa"},
+                    {"value": "18:11:00", "key": "czas"},
                 ]
             }
         ]
@@ -296,3 +410,4 @@ def test_bus_for_stops_data_reading(mock_bus_for_stops_data_1000_01,
             assert key in data_dict
             for i in range(len(expected_bus_for_stop[key])):
                 assert expected_bus_for_stop[key][i] == data_dict[key][i]
+        dr.dump_busses_for_stops('test_busses_for_stops.csv')

@@ -120,7 +120,6 @@ class data_reader:
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
-            csv_writer.writerow(data_headers)
             for key in self.busses_for_stops:
                 for data in self.busses_for_stops[key]:
                     csv_writer.writerow(data.to_csv())
@@ -132,7 +131,7 @@ class data_reader:
             for line in csv_reader:
                 nr_of_lines = nr_of_lines + 1
                 if nr_of_lines > 1 and len(line) == 3:
-                    response = requests.post(
+                    response = requests.get(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e-60518c9f3238&busstopId=' +
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.api_key)
                     #print(response.json())
