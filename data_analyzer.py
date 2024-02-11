@@ -148,7 +148,11 @@ class data_analyzer:
 
     def calc_data_for_overspeed_percentages(self):
         self.nr_of_invalid_times = 0
+        iterator = 0
+        print(len(self.bus_data))
         for bus_nr in self.bus_data:
+            iterator += 1
+            print(iterator)
             for vehicle_nr in self.bus_data[bus_nr]:
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
