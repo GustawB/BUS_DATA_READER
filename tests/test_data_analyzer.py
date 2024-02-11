@@ -1,7 +1,7 @@
 import pytest
 
 from data_analyzer import data_analyzer
-from data_holders import ZTM_bus, bus_stop
+from data_holders import ZTM_bus, bus_stop, bus_route_entry
 
 
 class TestDataAnalyzerClass:
@@ -76,6 +76,27 @@ class TestDataAnalyzerClass:
             }
         }
 
+    @pytest.fixture
+    def expected_bus_routes(self):
+        return {
+            '666': {
+                'TP-OST': [
+                    bus_route_entry('666', 'TP-OST', '2000', '1000', '2', '01'),
+                    bus_route_entry('666', 'TP-OST', '2002', '1002', '1', '03')
+                ]
+            },
+            '777': {
+                'TP-TSO': [
+                    bus_route_entry('777', 'TP-TSO', '2000', '1000', '7', '01')
+                ]
+            },
+            '888': {
+                'TP-STO': [
+                    bus_route_entry('888', 'TP-STO', '2001', '1001', '9', '02')
+                ]
+            }
+        }
+
     def test_reading_bus_data(self, expected_bus_locations):
         da = data_analyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
@@ -110,6 +131,16 @@ class TestDataAnalyzerClass:
                 assert post in data_dict[team]
                 assert expected_bus_stops[team][post] == data_dict[team][post]
 
+    def test_reading_bus_routes_data(self, expected_bus_routes):
+        da = data_analyzer()
+        da.read_bus_routes_data('test_files/test_bus_routes.csv')
+        data_dict = da.bus_routes_data
+        for bus in expected_bus_routes:
+            assert bus in data_dict
+            for route in expected_bus_routes[bus]:
+                assert route in data_dict[bus]
+                for i in range(len(expected_bus_routes[bus][route])):
+                    assert expected_bus_routes[bus][route][i] == data_dict[bus][route][i]
 
     def test_nr_of_overspeeding_busses(self):
         da = data_analyzer()
