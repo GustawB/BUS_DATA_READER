@@ -101,6 +101,15 @@ class bus_stop:
         self.direction = direction
         self.location = Location(longitude, latitude)
 
+    def __eq__(self, other):
+        if self.team_name != other.team_name: return False
+        if self.street_id != other.street_id: return False
+        if self.team != other.team: return False
+        if self.post != other.post: return False
+        if self.direction != other.direction: return False
+        if self.location != other.location: return False
+        return True
+
     def __hash__(self):
         return hash((self.team_name, self.street_id, self.team,
                      self.post, self.direction, self.location))
@@ -119,6 +128,12 @@ class bus_for_stop:
         self.team = team
         self.post = post
         self.bus = bus
+
+    def __eq__(self, other):
+        if self.team != other.team: return False
+        if self.post != other.post: return False
+        if self.bus != other.bus: return False
+        return True
 
     def to_csv(self):
         result = [self.team, self.post, self.bus]

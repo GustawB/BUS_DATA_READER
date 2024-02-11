@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from data_holders import ZTM_bus, bus_stop
+from data_holders import ZTM_bus, bus_stop, bus_for_stop
 from data_reader import data_reader
 
 
@@ -75,6 +75,7 @@ def mock_bus_locations_req_2():
         }]
     }
 
+
 @pytest.fixture
 def mock_bus_stop_data():
     return {
@@ -85,8 +86,8 @@ def mock_bus_stop_data():
                     {"value": "01", "key": "slupek"},
                     {"value": "BLBL", "key": "nazwa_zespolu"},
                     {"value": "2000", "key": "id_ulicy"},
-                    {"value": "2000", "key": "szer_geo"},
-                    {"value": "TP-OST", "key": "dlug_geo"},
+                    {"value": "52.219890", "key": "szer_geo"},
+                    {"value": "21.001999", "key": "dlug_geo"},
                     {"value": "ALA", "key": "kierunek"},
                     {"value": "2023-10-07 00:00:00.0", "key": "obowiazuje_od"}
                 ]
@@ -97,8 +98,8 @@ def mock_bus_stop_data():
                     {"value": "02", "key": "slupek"},
                     {"value": "LBLB", "key": "nazwa_zespolu"},
                     {"value": "2001", "key": "id_ulicy"},
-                    {"value": "TP-TSO", "key": "szer_geo"},
-                    {"value": "TP-TSO", "key": "dlug_geo"},
+                    {"value": "52.1293747", "key": "szer_geo"},
+                    {"value": "21.1039602", "key": "dlug_geo"},
                     {"value": "BALA", "key": "kierunek"},
                     {"value": "2023-10-07 00:00:00.0", "key": "obowiazuje_od"}
                 ]
@@ -109,14 +110,59 @@ def mock_bus_stop_data():
                     {"value": "03", "key": "slupek"},
                     {"value": "BYYL", "key": "nazwa_zespolu"},
                     {"value": "2002", "key": "id_ulicy"},
-                    {"value": "2002", "key": "szer_geo"},
-                    {"value": "TP-STO", "key": "dlug_geo"},
+                    {"value": "52.1776255", "key": "szer_geo"},
+                    {"value": "20.995331", "key": "dlug_geo"},
                     {"value": "ABALA", "key": "kierunek"},
                     {"value": "2023-10-07 00:00:00.0", "key": "obowiazuje_od"}
                 ]
             }
         ]
     }
+
+
+@pytest.fixture
+def mock_bus_for_stops_data_1000_01():
+    return {
+        "result": [
+            {
+                "values": [
+                    {"value": "666", "key": "linia"}
+                ]
+            },
+            {
+                "values": [
+                    {"value": "777", "key": "linia"}
+                ]
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_bus_for_stops_data_1001_02():
+    return {
+        "result": [
+            {
+                "values": [
+                    {"value": "888", "key": "linia"}
+                ]
+            },
+        ]
+    }
+
+
+@pytest.fixture
+def mock_bus_for_stops_data_1002_03():
+    return {
+        "result": [
+            {
+                "values": [
+                    {"value": "666", "key": "linia"}
+                ]
+            },
+        ]
+    }
+
 
 @pytest.fixture
 def mock_bus_stopazasdadasdas_data():
@@ -178,10 +224,20 @@ def expected_dict_2():
 
 @pytest.fixture
 def expected_bus_stop():
-    return{
-        "BLBL": bus_stop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.219890),
-        "LBLB": bus_stop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747),
-        "BYYL": bus_stop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)
+    return {
+        "BLBL": [bus_stop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.219890)],
+        "LBLB": [bus_stop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)],
+        "BYYL": [bus_stop('BYYL', '2002', '1002', '03', 'ABALA', 20.995331, 52.1776255)]
+    }
+
+
+@pytest.fixture
+def expected_bus_for_stop():
+    return {
+        '1000': [bus_for_stop('1000', '01', '666'),
+                 bus_for_stop('1000', '01', '777')],
+        '1001': [bus_for_stop('1001', '02', '888')],
+        '1002': [bus_for_stop('1002', '03', '666')]
     }
 
 
@@ -216,4 +272,27 @@ def test_bus_stop_data_reading(mock_bus_stop_data, expected_bus_stop):
         dr = data_reader('random_apikey')
         dr.get_stops_data()
         data_dict = dr.bus_stop_data
+        for key in expected_bus_stop:
+            assert key in data_dict
+            for i in range(len(expected_bus_stop[key])):
+                assert expected_bus_stop[key][i] == data_dict[key][i]
+        dr.dump_stops_data('test_bus_stops.csv')
 
+
+def test_bus_for_stops_data_reading(mock_bus_for_stops_data_1000_01,
+                                    mock_bus_for_stops_data_1001_02,
+                                    mock_bus_for_stops_data_1002_03,
+                                    expected_bus_for_stop):
+    with patch('data_reader.requests.get') as mock_get:
+        mock_get.return_value = MagicMock(status_code=200)
+        mock_get.return_value.json.side_effect = [mock_bus_for_stops_data_1000_01,
+                                                  mock_bus_for_stops_data_1001_02,
+                                                  mock_bus_for_stops_data_1002_03]
+        dr = data_reader('random_apikey')
+        dr.get_busses_for_stops('test_bus_stops.csv')
+        data_dict = dr.busses_for_stops
+        assert len(data_dict) == 3
+        for key in expected_bus_for_stop:
+            assert key in data_dict
+            for i in range(len(expected_bus_for_stop[key])):
+                assert expected_bus_for_stop[key][i] == data_dict[key][i]

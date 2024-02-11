@@ -104,7 +104,7 @@ class data_reader:
             for line in csv_reader:
                 nr_of_lines = nr_of_lines + 1
                 if nr_of_lines > 1 and line[2] != 'null' and line[3] != 'null':
-                    response = requests.post(
+                    response = requests.get(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=88cd555f-6f31-43ca-9de4-66c479ad5942&busstopId=' +
                         line[2] + '&busstopNr=' + line[3] + '&apikey=' + self.api_key)
                     for data in response.json()['result']:
