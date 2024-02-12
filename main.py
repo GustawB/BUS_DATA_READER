@@ -11,9 +11,9 @@ if __name__ == '__main__':
     dt = DataReader('afd497b5-83e7-4ecf-8c98-cd1805aa16c9')
     # dt.get_streets()
     # dt.dump_streets('streets.csv')
-    dt.get_bus_data(2, 60)
-    print('sex')
-    dt.dump_bus_data('bus_data.csv', 600)
+    #dt.get_bus_data(2, 60)
+    #print('sex')
+    #dt.dump_bus_data('bus_data.csv', 600)
     # dt.get_bus_routes()
     # dt.dump_bus_routes('bus_routes_data.csv')
 

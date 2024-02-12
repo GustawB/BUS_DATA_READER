@@ -46,18 +46,19 @@ class DataReader:
                'f2e5503e-927d-4ad3-9500-4ab9e55deb59&apikey=') + self.api_key + '&type=1'
         for i in range(nr_of_samples):
             response = requests.get(url)
-            while response.status_code != 200:
+            while response.status_code != 200 or response.json()['result'][0] == 'B':
                 response = requests.get(url)
             for j in range(len(response.json()['result'])):
                 helper = response.json()['result'][j]
                 time_data = self.time_parser(helper['Time'])
-                bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
-                              helper['Brigade'], time_data)
+                if helper['Lines'][0] != 'Z':
+                    bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
+                                  helper['Brigade'], time_data)
 
-                if helper['Lines'] in self.bus_data:
-                    self.bus_data[helper['Lines']].append(bus)
-                else:
-                    self.bus_data[helper['Lines']] = [bus]
+                    if helper['Lines'] in self.bus_data:
+                        self.bus_data[helper['Lines']].append(bus)
+                    else:
+                        self.bus_data[helper['Lines']] = [bus]
 
             time.sleep(sample_length)
 

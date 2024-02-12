@@ -214,22 +214,22 @@ class DataAnalyzer:
                 break
             for route_code in self.bus_routes_data[next_bus.line]:
                 for bre in self.bus_routes_data[next_bus.line][route_code]:
-                    if next_bus.line[0] != 'Z':
-                        bs_data = self.bus_stop_data[bre.team_nr][bre.bus_stop_nr]
-                        if loc_c == bs_data.location:
-                            delay = self.calc_time_difference(next_bus.line, local_time_data, bs_data, route_code)
-                            if delay is not None and delay != 100000 and bs_data in found_bus_stops:
-                                #print(str(next_bus.line) + ' ' + str(bre.team_nr) + ' ' + str(
-                                 #   bre.bus_stop_nr) + ' ' + str(
-                                  #  route_code) + ' ' + str(delay))
-                                temp = found_bus_stops[bs_data]
-                                found_bus_stops[bs_data] = min(abs(delay), abs(temp))
-                                # print(found_bus_stops[bs_data])
-                            elif delay is not None and delay != 100000:
-                                #print(delay)
-                                found_bus_stops[bs_data] = delay
-            loc_c.longitude(loc_c.longitude + diff_x)
-            loc_c.latitude(loc_c.latitude + diff_y)
+                    bs_data = self.bus_stop_data[bre.team_nr][bre.bus_stop_nr]
+                    if loc_c == bs_data.location:
+                        delay = self.calc_time_difference(next_bus.line, local_time_data, bs_data, route_code)
+                        if delay is not None and delay != 100000 and bs_data in found_bus_stops:
+                            #print(str(next_bus.line) + ' ' + str(bre.team_nr) + ' ' + str(
+                             #   bre.bus_stop_nr) + ' ' + str(
+                              #  route_code) + ' ' + str(delay))
+                            temp = found_bus_stops[bs_data]
+                            found_bus_stops[bs_data] = min(abs(delay), abs(temp))
+                            # print(found_bus_stops[bs_data])
+                        elif delay is not None and delay != 100000:
+                            #print(delay)
+                            found_bus_stops[bs_data] = delay
+
+            loc_c.longitude = loc_c.longitude + diff_x
+            loc_c.latitude = loc_c.latitude + diff_y
             local_time_data += time_diff
 
         return found_bus_stops
