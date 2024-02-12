@@ -138,6 +138,8 @@ class DataAnalyzer:
         return nr_of_busses_overspeeding
 
     def points_with_no_overspeeds(self, bus):
+        if bus.location.street_name == '':
+            print(bus.to_csv())
         if bus.location.street_name in self.nr_of_all_busses_for_ovespeed_points:
             self.nr_of_all_busses_for_ovespeed_points[bus.location.street_name] += 1
         else:
@@ -154,10 +156,10 @@ class DataAnalyzer:
     def calc_data_for_overspeed_percentages(self):
         self.nr_of_invalid_times = 0
         iterator = 0
-        print(len(self.bus_data))
+        #print(len(self.bus_data))
         for bus_nr in self.bus_data:
             iterator += 1
-            print(iterator)
+            #print(iterator)
             for vehicle_nr in self.bus_data[bus_nr]:
                 for i in range(len(self.bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
@@ -178,12 +180,14 @@ class DataAnalyzer:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for data in sorted(self.overspeed_percentages, key=self.overspeed_percentages.get, reverse=True):
+                if data == '':
+                    print(data)
                 data_list = [data, str(int(self.overspeed_percentages[data] * 100))]
                 csv_writer.writerow(data_list)
 
     def calc_time_difference(self, bus_line, bus_time, bs_data, route_code):
         min_diff = 100000
-        #print(str(bs_data.team) + ' ' + str(bs_data.post) + ' ' + str(bus.line))
+        # print(str(bs_data.team) + ' ' + str(bs_data.post) + ' ' + str(bus.line))
         try:
             for row in self.schedules[bs_data.team][bs_data.post][bus_line]:
                 if row[2] == route_code:
@@ -218,14 +222,14 @@ class DataAnalyzer:
                     if loc_c == bs_data.location:
                         delay = self.calc_time_difference(next_bus.line, local_time_data, bs_data, route_code)
                         if delay is not None and delay != 100000 and bs_data in found_bus_stops:
-                            #print(str(next_bus.line) + ' ' + str(bre.team_nr) + ' ' + str(
-                             #   bre.bus_stop_nr) + ' ' + str(
-                              #  route_code) + ' ' + str(delay))
+                            # print(str(next_bus.line) + ' ' + str(bre.team_nr) + ' ' + str(
+                            #   bre.bus_stop_nr) + ' ' + str(
+                            #  route_code) + ' ' + str(delay))
                             temp = found_bus_stops[bs_data]
                             found_bus_stops[bs_data] = min(abs(delay), abs(temp))
                             # print(found_bus_stops[bs_data])
                         elif delay is not None and delay != 100000:
-                            #print(delay)
+                            # print(delay)
                             found_bus_stops[bs_data] = delay
 
             loc_c.longitude = loc_c.longitude + diff_x
@@ -279,6 +283,3 @@ class DataAnalyzer:
             csv_writer.writerow(data_list)
             data_list = ['non_existing_schedules', str(self.nr_of_non_existing_schedules)]
             csv_writer.writerow(data_list)
-
-
-        

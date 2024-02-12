@@ -61,7 +61,10 @@ class Location:
                 'https://services.gugik.gov.pl/uug/?request=GetAddressReverse&location=POINT('
                 + str(self.longitude) + ' ' + str(self.latitude) + ')&srid=4326')
             if response.json()['results'] is not None:
-                self.__street_name = response.json()['results']['1']['street']
+                if response.json()['results']['1']['street'] is not None:
+                    self.__street_name = response.json()['results']['1']['street']
+                else:
+                    self.__street_name = 'Unknown_location'
             else:
                 self.__street_name = 'Unknown_location'
 
