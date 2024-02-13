@@ -190,7 +190,7 @@ class DataAnalyzer:
             self.__points_of_overspeed[bus.location.street_name] = 1
         self.points_with_no_overspeeds(bus)
 
-    def calc_data_for___overspeed_percentages(self):
+    def calc_data_for_overspeed_percentages(self):
         self.__nr_of_invalid_times = 0
         iterator = 0
         for bus_nr in self.__bus_data:
@@ -206,7 +206,7 @@ class DataAnalyzer:
                     elif speed > 50:
                         self.points_with_overspeeds(self.__bus_data[bus_nr][vehicle_nr][i + 1])
 
-    def calc___overspeed_percentages(self, file_to_dump):
+    def calc_overspeed_percentages(self, file_to_dump):
         for key in self.__points_of_overspeed:
             self.__overspeed_percentages[key] = (float(self.__points_of_overspeed[key]) /
                                                  float(self.__nr_of_all_busses_for_ovespeed_points[key]))
@@ -269,21 +269,39 @@ class DataAnalyzer:
 
         return found_bus_stops
 
-    def calc___times_for_stops(self):
+    def calc_times_for_stops(self):
+        calculated_buses = {}
         for bus_nr in self.__bus_data:
             for vehicle_nr in self.__bus_data[bus_nr]:
                 for i in range(len(self.__bus_data[bus_nr][vehicle_nr]) - 1):
-                    found_bus_stops = self.bus_stops_in_one_sample(self.__bus_data[bus_nr][vehicle_nr][i],
-                                                                   self.__bus_data[bus_nr][vehicle_nr][i + 1])
+                    curr_bus_data = self.__bus_data[bus_nr][vehicle_nr][i]
+                    next_bus_data = self.__bus_data[bus_nr][vehicle_nr][i + 1]
+                    found_bus_stops = self.bus_stops_in_one_sample(curr_bus_data,
+                                                                   next_bus_data)
+                    if bus_nr not in calculated_buses:
+                        calculated_buses[bus_nr] = {}
+                    if vehicle_nr not in calculated_buses[bus_nr]:
+                        calculated_buses[bus_nr][vehicle_nr] = {}
+                    if next_bus_data.brigade not in calculated_buses[bus_nr][vehicle_nr]:
+                        calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade] = {}
                     for key in found_bus_stops:
-                        if key in self.__times_for_stops:
-                            self.__times_for_stops[key] += found_bus_stops[key]
-                            self.__nr_of_buses_for_stops[key] += 1
+                        if key in calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade]:
+                            if (abs(calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade][key]) >
+                                    found_bus_stops[key]):
+                                self.__times_for_stops[key] -= (
+                                    calculated_buses)[bus_nr][vehicle_nr][next_bus_data.brigade][key]
+                                self.__times_for_stops += found_bus_stops[key]
+                                calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade][key] = found_bus_stops[key]
                         else:
-                            self.__times_for_stops[key] = found_bus_stops[key]
-                            self.__nr_of_buses_for_stops[key] = 1
+                            calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade][key] = found_bus_stops[key]
+                            if key in self.__times_for_stops:
+                                self.__times_for_stops[key] += found_bus_stops[key]
+                                self.__nr_of_buses_for_stops[key] += 1
+                            else:
+                                self.__times_for_stops[key] = found_bus_stops[key]
+                                self.__nr_of_buses_for_stops[key] = 1
 
-    def calc_average_delays(self, file_to_dump, upper_limit, lower_limit):
+    def calc_average_delays(self, file_to_dump, upper_limit=-1, lower_limit=1):
         for key in self.__nr_of_buses_for_stops:
             new_key = key.team_name + '_' + key.post
             self.__avg_times_for_stops[new_key] = (float(self.__times_for_stops[key]) /
@@ -294,7 +312,11 @@ class DataAnalyzer:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for data in sorted(self.__avg_times_for_stops, key=self.__avg_times_for_stops.get, reverse=True):
-                if upper_limit > self.__avg_times_for_stops[data] > lower_limit:
+                if upper_limit != -1 and lower_limit != 1:
+                    if upper_limit > self.__avg_times_for_stops[data] > lower_limit:
+                        data_list = [data, str(self.__avg_times_for_stops[data])]
+                        csv_writer.writerow(data_list)
+                else:
                     data_list = [data, str(self.__avg_times_for_stops[data])]
                     csv_writer.writerow(data_list)
 

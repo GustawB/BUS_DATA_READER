@@ -169,7 +169,7 @@ class TestDataReaderClass:
                     "values": [
                         {"value": "null", "key": "symbol_2"},
                         {"value": "null", "key": "symbol_1"},
-                        {"value": "1", "key": "brygada"},
+                        {"value": "5", "key": "brygada"},
                         {"value": "BLBL", "key": "kierunek"},
                         {"value": "TP-OST", "key": "trasa"},
                         {"value": "14:51:00", "key": "czas"},
@@ -179,7 +179,7 @@ class TestDataReaderClass:
                     "values": [
                         {"value": "null", "key": "symbol_2"},
                         {"value": "null", "key": "symbol_1"},
-                        {"value": "2", "key": "brygada"},
+                        {"value": "5", "key": "brygada"},
                         {"value": "BLBL", "key": "kierunek"},
                         {"value": "TP-OST", "key": "trasa"},
                         {"value": "15:01:00", "key": "czas"},
@@ -189,7 +189,7 @@ class TestDataReaderClass:
                     "values": [
                         {"value": "null", "key": "symbol_2"},
                         {"value": "null", "key": "symbol_1"},
-                        {"value": "3", "key": "brygada"},
+                        {"value": "5", "key": "brygada"},
                         {"value": "BLBL", "key": "kierunek"},
                         {"value": "TP-OST", "key": "trasa"},
                         {"value": "15:11:00", "key": "czas"},
@@ -400,9 +400,9 @@ class TestDataReaderClass:
         return {
             "1000": {
                 "01": {
-                    "666": [BusScheduleEntry('1', 'BLBL', 'TP-OST', '14:51:00'),
-                            BusScheduleEntry('2', 'BLBL', 'TP-OST', '15:01:00'),
-                            BusScheduleEntry('3', 'BLBL', 'TP-OST', '15:11:00')],
+                    "666": [BusScheduleEntry('5', 'BLBL', 'TP-OST', '14:51:00'),
+                            BusScheduleEntry('5', 'BLBL', 'TP-OST', '15:01:00'),
+                            BusScheduleEntry('5', 'BLBL', 'TP-OST', '15:11:00')],
                     "777": [BusScheduleEntry('4', 'LBLB', 'TP-TSO', '04:16:00'),
                             BusScheduleEntry('5', 'LBLB', 'TP-TSO', '05:16:00'),
                             BusScheduleEntry('6', 'LBLB', 'TP-TSO', '06:16:00'), ]

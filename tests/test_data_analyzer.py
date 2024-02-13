@@ -97,6 +97,12 @@ class TestDataAnalyzerClass:
             }
         }
 
+    @pytest.fixture
+    def expected_avg_delays(self):
+        return {
+
+        }
+
     def test_reading_bus_data(self, expected_bus_locations):
         da = DataAnalyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
@@ -148,3 +154,13 @@ class TestDataAnalyzerClass:
         assert da.calc_nr_of_overspeeding_busses() == 3
         assert da.nr_of_invalid_speeds == 1
         assert da.nr_of_invalid_times == 0
+
+    def test_avg_delays(self):
+        da = DataAnalyzer()
+        da.read_bus_data('test_files/test_bus_data.csv')
+        da.read_bus_stop_data('test_files/test_bus_stops.csv')
+        da.read_bus_routes_data('test_files/test_bus_routes.csv')
+        da.read_schedules_data('test_files/schedules', 20)
+        da.calc_times_for_stops()
+        da.calc_average_delays('test_files/test_results.csv')
+
