@@ -3,10 +3,10 @@ import setuptools
 with open("buspy/README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 setuptools.setup(
-    name="example-pkg-YOUR-USERNAME-HERE",  # <-- update !!!
+    name="buspy",
     version="0.0.1",
     author="Gustaw Blachowski",
-    author_email="gustaw.blachowski@gmail.com",  # <-- update
+    author_email="gustaw.blachowski@gmail.com",
     description="Bus data reader package",
     long_description=long_description,
     long_description_content_type="text/markdown",
