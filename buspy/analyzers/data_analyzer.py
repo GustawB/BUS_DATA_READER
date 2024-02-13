@@ -151,9 +151,7 @@ class DataAnalyzer:
 
     def normalise_avg_speed(self, dist, prev_bus, next_bus):
         local_length = next_bus.time_data - prev_bus.time_data
-        # print(local_length)
         if local_length <= 0:
-            # print(str(prev_bus.time_data) + ' ' + str(next_bus.time_data))
             self.__nr_of_invalid_times += 1
             return -1
         speed = dist / local_length * 3600 / 1000
@@ -175,15 +173,11 @@ class DataAnalyzer:
                                                      self.__bus_data[bus_line][bus][i + 1])
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
-
                 if nr_of_overspeeds > 0:
                     nr_of_busses_overspeeding = nr_of_busses_overspeeding + 1
-
         return nr_of_busses_overspeeding
 
     def points_with_no_overspeeds(self, bus):
-        if bus.location.street_name == '':
-            print(bus.to_csv())
         if bus.location.street_name in self.__nr_of_all_busses_for_ovespeed_points:
             self.__nr_of_all_busses_for_ovespeed_points[bus.location.street_name] += 1
         else:
@@ -194,16 +188,13 @@ class DataAnalyzer:
             self.__points_of_overspeed[bus.location.street_name] += 1
         else:
             self.__points_of_overspeed[bus.location.street_name] = 1
-
         self.points_with_no_overspeeds(bus)
 
     def calc_data_for___overspeed_percentages(self):
         self.__nr_of_invalid_times = 0
         iterator = 0
-        # print(len(self.__bus_data))
         for bus_nr in self.__bus_data:
             iterator += 1
-            # print(iterator)
             for vehicle_nr in self.__bus_data[bus_nr]:
                 for i in range(len(self.__bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.__bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
@@ -224,17 +215,14 @@ class DataAnalyzer:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for data in sorted(self.__overspeed_percentages, key=self.__overspeed_percentages.get, reverse=True):
-                if data == '':
-                    print(data)
                 data_list = [str(data), str(self.__overspeed_percentages[data] * 100)]
                 csv_writer.writerow(data_list)
 
-    def calc_time_difference(self, bus_line, bus_time, bs_data, route_code):
+    def calc_time_difference(self, bus_line, bus_brigade, bus_time, bs_data, route_code):
         min_diff = 100000
-        # print(str(bs_data.team) + ' ' + str(bs_data.post) + ' ' + str(bus.line))
         try:
             for row in self.__schedules[bs_data.team][bs_data.post][bus_line]:
-                if row[2] == route_code:
+                if row[2] == route_code and row[0] == bus_brigade:
                     time_sec = int(row[3])
                     difference = bus_time - time_sec
                     if abs(difference) < abs(min_diff):
@@ -265,18 +253,16 @@ class DataAnalyzer:
                     if next_bus.line[0] != 'Z':
                         bs_data = self.__bus_stop_data[bre.team_nr][bre.bus_stop_nr]
                         if loc_c == bs_data.location:
-                            delay = self.calc_time_difference(next_bus.line, local_time_data, bs_data, route_code)
-                            if delay is not None and delay != 100000 and bs_data in found_bus_stops:
-                                # print(str(next_bus.line) + ' ' + str(bre.team_nr) + ' ' + str(
-                                #   bre.bus_stop_nr) + ' ' + str(
-                                #  route_code) + ' ' + str(delay))
+                            delay = self.calc_time_difference(next_bus.line, next_bus.brigade,
+                                                              local_time_data, bs_data, route_code)
+                            if delay is not None and delay < 100000 and bs_data in found_bus_stops:
                                 temp = found_bus_stops[bs_data]
-                                found_bus_stops[bs_data] = min(abs(delay), abs(temp))
-                                # print(found_bus_stops[bs_data])
-                            elif delay is not None and delay != 100000:
-                                # print(delay)
+                                if abs(delay) < abs(temp):
+                                    found_bus_stops[bs_data] = delay
+                                elif abs(delay) == abs(temp):
+                                    found_bus_stops[bs_data] = max(delay, temp)
+                            elif delay is not None and delay < 100000:
                                 found_bus_stops[bs_data] = delay
-
             loc_c.longitude = loc_c.longitude + diff_x
             loc_c.latitude = loc_c.latitude + diff_y
             local_time_data += time_diff
@@ -284,13 +270,8 @@ class DataAnalyzer:
         return found_bus_stops
 
     def calc___times_for_stops(self):
-        print(len(self.__bus_data))
-        nr = 0
         for bus_nr in self.__bus_data:
-            print(nr)
-            nr += 1
             for vehicle_nr in self.__bus_data[bus_nr]:
-                # print(len(self.__bus_data[bus_nr][vehicle_nr]))
                 for i in range(len(self.__bus_data[bus_nr][vehicle_nr]) - 1):
                     found_bus_stops = self.bus_stops_in_one_sample(self.__bus_data[bus_nr][vehicle_nr][i],
                                                                    self.__bus_data[bus_nr][vehicle_nr][i + 1])

@@ -110,8 +110,6 @@ class DataReader:
             else:
                 self.__bus_stop_data[bs.team_name] = [bs]
 
-            print(data['values'])
-
     def dump_stops_data(self, file_to_dump):
         data_headers = ['Team_name', 'Street_id', 'Team', 'Post', 'Direction', 'Longitude', 'Latitude']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
@@ -210,7 +208,7 @@ class DataReader:
                                       helper['typ'], helper['nr_przystanku']))
 
     def dump_bus_routes(self, file_to_dump):
-        data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Team_nr', 'Type', 'Bus_stop_nr']
+        data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Stop_team_nr', 'Stop_type', 'Stop_nr']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
