@@ -99,9 +99,7 @@ class TestDataAnalyzerClass:
 
     @pytest.fixture
     def expected_avg_delays(self):
-        return {
-
-        }
+        return {'BLBL_01': 15518.0}
 
     def test_reading_bus_data(self, expected_bus_locations):
         da = DataAnalyzer()
@@ -155,7 +153,7 @@ class TestDataAnalyzerClass:
         assert da.nr_of_invalid_speeds == 1
         assert da.nr_of_invalid_times == 0
 
-    def test_avg_delays(self):
+    def test_avg_delays(self, expected_avg_delays):
         da = DataAnalyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
         da.read_bus_stop_data('test_files/test_bus_stops.csv')
@@ -163,4 +161,5 @@ class TestDataAnalyzerClass:
         da.read_schedules_data('test_files/schedules', 20)
         da.calc_times_for_stops()
         da.calc_average_delays('test_files/test_results.csv')
+        assert da.avg_times_for_stops == expected_avg_delays
 
