@@ -31,9 +31,9 @@ class TestDataAnalyzerClass:
             '1000': {
                 '01': {
                     '666': [
-                        ['1', 'BLBL', 'TP-OST', '53460'],
-                        ['2', 'BLBL', 'TP-OST', '54060'],
-                        ['3', 'BLBL', 'TP-OST', '54660']
+                        ['5', 'BLBL', 'TP-OST', '53460'],
+                        ['5', 'BLBL', 'TP-OST', '54060'],
+                        ['5', 'BLBL', 'TP-OST', '54660']
                     ],
                     '777': [
                         ['4', 'LBLB', 'TP-TSO', '15360'],
