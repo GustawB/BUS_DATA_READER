@@ -3,8 +3,8 @@ import os.path
 import pytest
 from unittest.mock import MagicMock, patch
 
-from data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
-from data_reader import DataReader
+from buspy.data_holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
+from buspy.readers.data_reader import DataReader
 
 
 class TestDataReaderClass:
@@ -78,7 +78,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_BusStop_data(self):
+    def mock_bus_stop_data(self):
         return {
             "result": [
                 {
@@ -121,7 +121,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_BusForStops_data_1000_01(self):
+    def mock_bus_for_stops_data_1000_01(self):
         return {
             "result": [
                 {
@@ -138,7 +138,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_BusForStops_data_1001_02(self):
+    def mock_bus_for_stops_data_1001_02(self):
         return {
             "result": [
                 {
@@ -150,7 +150,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def mock_BusForStops_data_1002_03(self):
+    def mock_bus_for_stops_data_1002_03(self):
         return {
             "result": [
                 {
@@ -379,7 +379,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def expected_BusStop(self):
+    def expected_bus_stop(self):
         return {
             "BLBL": [BusStop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.219890)],
             "LBLB": [BusStop('LBLB', '2001', '1001', '02', 'BALA', 21.1039602, 52.1293747)],
@@ -387,7 +387,7 @@ class TestDataReaderClass:
         }
 
     @pytest.fixture
-    def expected_BusForStop(self):
+    def expected_bus_for_stop(self):
         return {
             '1000': [BusForStop('1000', '01', '666'),
                      BusForStop('1000', '01', '777')],
@@ -430,21 +430,21 @@ class TestDataReaderClass:
             "666": {
                 "TP-OST": {
                     1: BusRouteEntry("666", "TP-OST",
-                                       "2000", "1000", "2", "01"),
+                                     "2000", "1000", "2", "01"),
                     2: BusRouteEntry("666", "TP-OST",
-                                       "2002", "1002", "1", "03")
+                                     "2002", "1002", "1", "03")
                 }
             },
             "777": {
                 "TP-TSO": {
                     1: BusRouteEntry("777", "TP-TSO",
-                                       "2000", "1000", "7", "01")
+                                     "2000", "1000", "7", "01")
                 }
             },
             "888": {
                 "TP-STO": {
                     1: BusRouteEntry("888", "TP-STO",
-                                       "2001", "1001", "9", "02")
+                                     "2001", "1001", "9", "02")
                 }
             }
         }
@@ -452,7 +452,7 @@ class TestDataReaderClass:
     def test_bus_data_reading(self, mock_bus_locations_1,
                               mock_bus_locations_2,
                               expected_bus_locations):
-        with patch('DataReader.requests.get') as mock_get:
+        with patch('buspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_locations_1
             dr = DataReader('random_apikey')
@@ -470,53 +470,53 @@ class TestDataReaderClass:
                 os.mkdir('test_files')
             dr.dump_bus_data('test_files/test_bus_data.csv')
 
-    def test_BusStop_data_reading(self, mock_BusStop_data, expected_BusStop):
-        with patch('DataReader.requests.get') as mock_get:
+    def test_bus_stop_data_reading(self, mock_bus_stop_data, expected_bus_stop):
+        with patch('buspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
-            mock_get.return_value.json.return_value = mock_BusStop_data
+            mock_get.return_value.json.return_value = mock_bus_stop_data
             dr = DataReader('random_apikey')
             dr.get_stops_data()
-            data_dict = dr.BusStop_data
-            for key in expected_BusStop:
+            data_dict = dr.bus_stop_data
+            for key in expected_bus_stop:
                 assert key in data_dict
-                for i in range(len(expected_BusStop[key])):
-                    assert expected_BusStop[key][i] == data_dict[key][i]
+                for i in range(len(expected_bus_stop[key])):
+                    assert expected_bus_stop[key][i] == data_dict[key][i]
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')
-            dr.dump_stops_data('test_files/test_BusStops.csv')
+            dr.dump_stops_data('test_files/test_bus_stops.csv')
 
-    def test_BusForStops_data_reading(self, mock_BusForStops_data_1000_01,
-                                        mock_BusForStops_data_1001_02,
-                                        mock_BusForStops_data_1002_03,
-                                        expected_BusForStop):
-        with patch('DataReader.requests.get') as mock_get:
+    def test_bus_for_stops_data_reading(self, mock_bus_for_stops_data_1000_01,
+                                        mock_bus_for_stops_data_1001_02,
+                                        mock_bus_for_stops_data_1002_03,
+                                        expected_bus_for_stop):
+        with patch('buspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
-            mock_get.return_value.json.side_effect = [mock_BusForStops_data_1000_01,
-                                                      mock_BusForStops_data_1001_02,
-                                                      mock_BusForStops_data_1002_03]
+            mock_get.return_value.json.side_effect = [mock_bus_for_stops_data_1000_01,
+                                                      mock_bus_for_stops_data_1001_02,
+                                                      mock_bus_for_stops_data_1002_03]
             dr = DataReader('random_apikey')
-            dr.get_busses_for_stops('test_files/test_BusStops.csv')
-            data_dict = dr.busses_for_stops
+            dr.get_buses_for_stops('test_files/test_bus_stops.csv')
+            data_dict = dr.buses_for_stops
             assert len(data_dict) == 3
-            for key in expected_BusForStop:
+            for key in expected_bus_for_stop:
                 assert key in data_dict
-                for i in range(len(expected_BusForStop[key])):
-                    assert expected_BusForStop[key][i] == data_dict[key][i]
-            dr.dump_busses_for_stops('test_files/test_busses_for_stops.csv')
+                for i in range(len(expected_bus_for_stop[key])):
+                    assert expected_bus_for_stop[key][i] == data_dict[key][i]
+            dr.dump_buses_for_stops('test_files/test_buses_for_stops.csv')
 
     def test_schedules_data_reading(self, mock_schedules_1000_01_666,
                                     mock_schedules_1000_01_777,
                                     mock_schedules_1001_02_888,
                                     mock_schedules_1002_03_666,
                                     expected_schedules):
-        with patch('DataReader.requests.get') as mock_get:
+        with patch('buspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.side_effect = [mock_schedules_1000_01_666,
                                                       mock_schedules_1000_01_777,
                                                       mock_schedules_1001_02_888,
                                                       mock_schedules_1002_03_666]
             dr = DataReader('random_apikey')
-            dr.get_bus_schedules('test_files/test_busses_for_stops.csv')
+            dr.get_bus_schedules('test_files/test_buses_for_stops.csv')
             data_dict = dr.schedules
             for team in expected_schedules:
                 assert team in data_dict
@@ -528,9 +528,9 @@ class TestDataReaderClass:
                             assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
             dr.dump_schedules('test_files/schedules')
 
-    def test_bus_routes_data_reading(self,mock_bus_routes,
+    def test_bus_routes_data_reading(self, mock_bus_routes,
                                      expected_bus_routes):
-        with patch('DataReader.requests.get') as mock_get:
+        with patch('buspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_routes
             dr = DataReader('random_apikey')

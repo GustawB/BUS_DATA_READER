@@ -1,6 +1,4 @@
-import time
 from math import cos, asin, sqrt, pi
-import datetime as dt
 
 import requests
 
@@ -16,10 +14,7 @@ class Location:
 
     def __eq__(self, other):
         dist = self.distance(other)
-        if dist <= 175:
-            return True
-        else:
-            return False
+        return dist <= 175.0
 
     def __ne__(self, other):
         return not (self == other)
@@ -140,11 +135,11 @@ class BusStop:
 
     def __eq__(self, other):
         return (self.team_name == other.team_name and
-                self.street_id != other.street_id and
-                self.team != other.team and
-                self.post != other.post and
-                self.direction != other.direction and
-                self.location != other.location)
+                self.street_id == other.street_id and
+                self.team == other.team and
+                self.post == other.post and
+                self.direction == other.direction and
+                self.location == other.location)
 
     def __hash__(self):
         return hash((self.team_name, self.street_id, self.team,
@@ -188,10 +183,9 @@ class BusForStop:
         self.__bus = bus
 
     def __eq__(self, other):
-        if self.team != other.team: return False
-        if self.post != other.post: return False
-        if self.bus != other.bus: return False
-        return True
+        return (self.team == other.team and
+                self.post == other.post and
+                self.bus == other.bus)
 
     @property
     def team(self):
@@ -224,10 +218,10 @@ class BusScheduleEntry:
         self.__time_data = time_sec
 
     def __eq__(self, other):
-        return (self.brigade != other.brigade and
-                self.direction != other.direction and
-                self.route != other.route and
-                self.time_data != other.time_data)
+        return (self.brigade == other.brigade and
+                self.direction == other.direction and
+                self.route == other.route and
+                self.time_data == other.time_data)
 
     @property
     def brigade(self):
@@ -253,12 +247,12 @@ class BusScheduleEntry:
 class BusRouteEntry:
     __slots__ = ('__bus_nr', '__route_code', '__street_id', '__team_nr', '__type', '__bus_stop_nr')
 
-    def __init__(self, bus_nr, route_code, street_id, team_nr, type, bus_stop_nr):
+    def __init__(self, bus_nr, route_code, street_id, team_nr, stop_type, bus_stop_nr):
         self.__bus_nr = bus_nr
         self.__route_code = route_code
         self.__street_id = street_id
         self.__team_nr = team_nr
-        self.__type = type
+        self.__type = stop_type
         self.__bus_stop_nr = bus_stop_nr
 
     def __eq__(self, other):

@@ -1,7 +1,7 @@
 import pytest
 
-from data_analyzer import DataAnalyzer
-from data_holders import ZTMBus, BusStop, BusRouteEntry
+from buspy.analyzers.data_analyzer import DataAnalyzer
+from buspy.data_holders.data_holders import ZTMBus, BusStop, BusRouteEntry
 
 
 class TestDataAnalyzerClass:
@@ -63,7 +63,7 @@ class TestDataAnalyzerClass:
         }
 
     @pytest.fixture
-    def expected_BusStops(self):
+    def expected_bus_stops(self):
         return {
             '1000': {
                 '01': BusStop('BLBL', '2000', '1000', '01', 'ALA', 21.001999, 52.21989)
@@ -121,15 +121,15 @@ class TestDataAnalyzerClass:
                     for i in range(len(expected_schedules[team][post][bus])):
                         assert expected_schedules[team][post][bus][i] == data_dict[team][post][bus][i]
 
-    def test_reading_BusStop_data(self, expected_BusStops):
+    def test_reading_bus_stop_data(self, expected_bus_stops):
         da = DataAnalyzer()
-        da.read_BusStop_data('test_files/test_BusStops.csv')
-        data_dict = da.BusStop_data
-        for team in expected_BusStops:
+        da.read_bus_stop_data('test_files/test_bus_stops.csv')
+        data_dict = da.bus_stop_data
+        for team in expected_bus_stops:
             assert team in data_dict
-            for post in expected_BusStops[team]:
+            for post in expected_bus_stops[team]:
                 assert post in data_dict[team]
-                assert expected_BusStops[team][post] == data_dict[team][post]
+                assert expected_bus_stops[team][post] == data_dict[team][post]
 
     def test_reading_bus_routes_data(self, expected_bus_routes):
         da = DataAnalyzer()
