@@ -59,9 +59,14 @@ class DataReader:
 
         return time_data
 
-    def get_bus_data(self, nr_of_samples, sample_length):
+    def get_bus_data(self, nr_of_samples, sample_length, time_offset=-1):
         url = ('https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= '
                'f2e5503e-927d-4ad3-9500-4ab9e55deb59&apikey=') + self.__api_key + '&type=1'
+        time_data = datetime.datetime.now(datetime.timezone.utc)
+        time_in_sec = (time_data.hour + 1) * 60
+        time_in_sec += time_data.minute
+        time_in_sec *= 60
+        time_in_sec += int(time_data.second)
         for i in range(nr_of_samples):
             response = requests.get(url)
             while response.status_code != 200 or response.json()['result'][0] == 'B':
@@ -72,28 +77,22 @@ class DataReader:
                 if helper['Lines'][0] != 'Z':
                     bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                                  helper['Brigade'], time_data)
-
+                    if 0 < time_offset < abs(bus.time_data - time_in_sec):
+                        continue
                     if helper['Lines'] in self.__bus_data:
                         self.__bus_data[helper['Lines']].append(bus)
                     else:
                         self.__bus_data[helper['Lines']] = [bus]
-
+            time_in_sec += sample_length
             time.sleep(sample_length)
 
     def dump_bus_data(self, file_to_dump, time_offset=-1):
-        time_data = datetime.datetime.now(datetime.timezone.utc)
-        time_in_sec = (time_data.hour + 1) * 60
-        time_in_sec += time_data.minute
-        time_in_sec *= 60
-        time_in_sec += int(time_data.second)
         data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
             for key in self.__bus_data:
                 for value in self.__bus_data[key]:
-                    if 0 < time_offset < abs(value.time_data - time_in_sec):
-                        continue
                     value.location.find_street()
                     csv_writer.writerow(value.to_csv())
 
