@@ -42,23 +42,15 @@ class DataReader:
     def bus_routes(self):
         return self.__bus_routes
 
+    # API sends times like 25:01:24 for schedules etc., so this function parses that back
+    # into normal time format (for 25:00:00 it would be 01:00:00).
     @staticmethod
     def time_parser(time_data):
-        if time_data[:2] == '24':
-            time_data = '00' + time_data[2:]
-        elif time_data[:2] == '25':
-            time_data = '01' + time_data[2:]
-        elif time_data[:2] == '26':
-            time_data = '02' + time_data[2:]
-        elif time_data[:2] == '27':
-            time_data = '03' + time_data[2:]
-        elif time_data[:2] == '28':
-            time_data = '04' + time_data[2:]
-        elif time_data[:2] == '29':
-            time_data = '05' + time_data[2:]
-
+        if '24' <= time_data[:2] <= '29':
+            time_data = '0' + str(int(time_data[:2]) % 24) + time_data[2:]
         return time_data
 
+    # Function that retrieves data bout bus locations every 'sample_length' seconds 'nr_of_samples' times.
     def get_bus_data(self, nr_of_samples, sample_length, time_offset=-1):
         url = ('https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= '
                'f2e5503e-927d-4ad3-9500-4ab9e55deb59&apikey=') + self.__api_key + '&type=1'
@@ -74,7 +66,8 @@ class DataReader:
             for j in range(len(response.json()['result'])):
                 helper = response.json()['result'][j]
                 time_data = self.time_parser(helper['Time'])
-                if helper['Lines'][0] != 'Z':
+                if helper['Lines'][0] != 'Z':  # Those are replacement buses, and there are problems with them
+                    # not having schedules or routes or etc., and there are only four of them, so I ignore them.
                     bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                                  helper['Brigade'], time_data)
                     if 0 < time_offset < abs(bus.time_data - time_in_sec):
@@ -83,10 +76,13 @@ class DataReader:
                         self.__bus_data[helper['Lines']].append(bus)
                     else:
                         self.__bus_data[helper['Lines']] = [bus]
+            # Waiting for the next sampling.
             time_in_sec += sample_length
             time.sleep(sample_length)
 
-    def dump_bus_data(self, file_to_dump, time_offset=-1):
+    # Function that stores all the gathered data about buses locations into the given file.
+    # This operation clears all data in the __bus_data dict.
+    def dump_bus_data(self, file_to_dump):
         data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -95,7 +91,9 @@ class DataReader:
                 for value in self.__bus_data[key]:
                     value.location.find_street()
                     csv_writer.writerow(value.to_csv())
+        self.__bus_data.clear()
 
+    # Function that retrieves data about every bus stop in the city.
     def get_stops_data(self):
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
@@ -109,6 +107,8 @@ class DataReader:
             else:
                 self.__bus_stop_data[bs.team_name] = [bs]
 
+    # Function that stores data about bus stops into the given file. This operation clears all data
+    # in the __bus_stop_data dict.
     def dump_stops_data(self, file_to_dump):
         data_headers = ['Team_name', 'Street_id', 'Team', 'Post', 'Direction', 'Longitude', 'Latitude']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
@@ -117,7 +117,9 @@ class DataReader:
             for key in self.__bus_stop_data:
                 for value in self.__bus_stop_data[key]:
                     csv_writer.writerow(value.to_csv())
+        self.__bus_stop_data.clear()
 
+    # Function that retrieves the information about every bus that goes through every bus stop.
     def get_buses_for_stops(self, bus_stop_list_file):
         with open(bus_stop_list_file, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
@@ -131,12 +133,15 @@ class DataReader:
                         line[2] + '&busstopNr=' + line[3] + '&apikey=' + self.__api_key)
                     for data in response.json()['result']:
                         bus = BusForStop(line[2], line[3], data['values'][0]['value'])
-                        if len(bus.bus) == 3:
+                        if len(bus.bus) == 3:  # Checking if what we received is actually a bus number
+                            # (e.g. not a tram one)
                             if bus.team in self.__buses_for_stops:
                                 self.__buses_for_stops[bus.team].append(bus)
                             else:
                                 self.__buses_for_stops[bus.team] = [bus]
 
+    # Function that stores data about bus numbers for every bus stop into the given file.
+    # This operation clears every data in the __buses_for_stops dict.
     def dump_buses_for_stops(self, file_to_dump):
         data_headers = ['Team', 'Post', 'Bus']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
@@ -145,19 +150,23 @@ class DataReader:
             for key in self.__buses_for_stops:
                 for data in self.__buses_for_stops[key]:
                     csv_writer.writerow(data.to_csv())
+        self.__buses_for_stops.clear()
 
+    # Function that retrieves the bus schedule for every existing combination of bus stop, bus post and bus nr.
+    # Those combinations are available i __buses_for_stops_file
+    # that should be created by get_buses_for_stops() function.
     def get_bus_schedules(self, __buses_for_stops_file):
         with open(__buses_for_stops_file, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
             nr_of_lines = 0
-            for line in csv_reader:
+            for line in csv_reader:  # Going through every combination of bus stop, bus post and bus nr.
                 nr_of_lines = nr_of_lines + 1
-                if nr_of_lines > 1 and len(line) == 3:
+                if nr_of_lines > 1 and len(line) == 3:  # Diuble checking if we are actually operating with a bus nr.
                     response = requests.get(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e'
                         '-60518c9f3238&busstopId=' +
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.__api_key)
-                    for data in response.json()['result']:
+                    for data in response.json()['result']:  # Iterating over the received schedule.
                         time_data = self.time_parser(data['values'][5]['value'])
                         scl = BusScheduleEntry(data['values'][2]['value'], data['values'][3]['value'],
                                                data['values'][4]['value'], time_data)
@@ -172,6 +181,9 @@ class DataReader:
                         else:
                             self.__schedules[line[0]] = {line[1]: {line[2]: [scl]}}
 
+    # Function that dumps schedules into the given folder. Every schedule is stored in a file
+    # with a name build from bus stop team, bus stop post and bus nr. This operation clears
+    # every data in the __schedules dict.
     def dump_schedules(self, folder_to_store_in):
         data_headers = ['Brigade', 'Direction', 'Route', 'Time']
         if not os.path.isdir(folder_to_store_in):
@@ -185,12 +197,18 @@ class DataReader:
                         csv_writer.writerow(data_headers)
                         for data in self.__schedules[team][post][bus]:
                             csv_writer.writerow(data.to_csv())
+        self.__schedules.clear()
 
+    # Function that retrieves every available bus route.
     def get_bus_routes(self):
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.__api_key)
         for bus_nr in response.json()['result']:
             for route_type in response.json()['result'][bus_nr]:
+                # Bus routes entries are numbered, but they usually aren't sorted by those numbers,
+                # so below I'm looking for the biggest number, then I'm creating a list of that length,
+                # and then I'm doing a sort of bucket sort (20th element gets assigned to the
+                # 20th position in the list)
                 max_nr = 0
                 for nr in response.json()['result'][bus_nr][route_type]:
                     if int(nr) > max_nr:
@@ -198,14 +216,14 @@ class DataReader:
                 if bus_nr not in self.__bus_routes:
                     self.__bus_routes[bus_nr] = {}
                 self.__bus_routes[bus_nr][route_type] = {}
-                for i in range(max_nr):
-                    self.__bus_routes[bus_nr][route_type][i + 1] = None
+                self.__bus_routes[bus_nr][route_type] = [None] * max_nr
                 for nr in response.json()['result'][bus_nr][route_type]:
                     helper = response.json()['result'][bus_nr][route_type][nr]
                     self.__bus_routes[bus_nr][route_type][int(nr)] = (
                         BusRouteEntry(bus_nr, route_type, helper['ulica_id'], helper['nr_zespolu'],
                                       helper['typ'], helper['nr_przystanku']))
 
+    # Function that dumps bus routes into the given file. This operation clears all data in the __bus_routes dict.
     def dump_bus_routes(self, file_to_dump):
         data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Stop_team_nr', 'Stop_type', 'Stop_nr']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
@@ -215,3 +233,4 @@ class DataReader:
                 for route_type in self.__bus_routes[bus_nr]:
                     for data in self.__bus_routes[bus_nr][route_type]:
                         csv_writer.writerow(self.__bus_routes[bus_nr][route_type][data].to_csv())
+        self.__bus_routes.clear()
