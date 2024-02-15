@@ -7,6 +7,7 @@ from buspy.data_holders.data_holders import ZTMBus, BusStop, BusForStop, BusSche
 import datetime
 
 
+# Class responsible for fetching the data from the https://api.um.warszawa.pl.
 class DataReader:
     __slots__ = ('__api_key', '__bus_data', '__bus_stop_data', '__buses_for_stops', '__schedules', '__bus_routes')
 

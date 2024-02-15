@@ -4,6 +4,7 @@ import os.path
 from buspy.data_holders.data_holders import ZTMBus, BusRouteEntry, BusStop
 
 
+# Class responsible for analyzing the data collected by the DataReader class.
 class DataAnalyzer:
     __slots__ = ('__bus_data', '__bus_stop_data', '__bus_routes_data', '__points_of_overspeed',
                  '__nr_of_all_busses_for_ovespeed_points', '__overspeed_percentages', '__times_for_stops',

@@ -3,6 +3,8 @@ from math import cos, asin, sqrt, pi
 import requests
 
 
+# Class responsible for holding the location, and finding the street tied to this location by
+# fetching the data from the services.gugik.gov.pl API.
 class Location:
     __slots__ = ('__longitude', '__latitude', '__street_name')
 
@@ -42,6 +44,7 @@ class Location:
     def street_name(self):
         return self.__street_name
 
+    # Function that calculates the distance between this location and the given one.
     def distance(self, other):
         r = 6371  # km
         p = pi / 180
@@ -50,6 +53,8 @@ class Location:
              (1 - cos((other.latitude - self.__latitude) * p)) / 2)
         return 2 * r * asin(sqrt(a)) * 1000
 
+    # By default, the street name is empty. But, if user calls for it, find_street() will
+    # fetch the location's data from the services.gugik.gov.pl API to extract the street name.
     def find_street(self):
         if self.street_name == '':
             response = requests.post(
@@ -63,6 +68,7 @@ class Location:
             else:
                 self.__street_name = 'Unknown_location'
 
+    # Converts class fields into the list.
     def to_csv(self):
         result = [self.longitude, self.latitude, self.street_name]
         return result
@@ -86,9 +92,6 @@ class ZTMBus:
             self.__time_data = time_sec
         else:
             self.__time_data = int(time_data)
-
-    # def __hash__(self):
-    #   return hash((self.line, self.location, self.vehicle_number, self.brigade, self.time_data))
 
     def __eq__(self, other):
         return (self.line == other.line and
@@ -117,6 +120,7 @@ class ZTMBus:
     def time_data(self):
         return self.__time_data
 
+    # Converts class fields into the list.
     def to_csv(self):
         result = [self.line] + self.location.to_csv() + [self.vehicle_number, self.brigade, self.time_data]
         return result
@@ -169,6 +173,7 @@ class BusStop:
     def location(self):
         return self.__location
 
+    # Converts class fields into the list.
     def to_csv(self):
         result = [self.team_name, self.street_id, self.team, self.post, self.direction] + self.location.to_csv()
         return result
@@ -199,6 +204,7 @@ class BusForStop:
     def bus(self):
         return self.__bus
 
+    # Converts class fields into the list.
     def to_csv(self):
         result = [self.team, self.post, self.bus]
         return result
@@ -239,6 +245,7 @@ class BusScheduleEntry:
     def time_data(self):
         return self.__time_data
 
+    # Converts class fields into the list.
     def to_csv(self):
         result = [self.brigade, self.direction, self.route, self.time_data]
         return result
@@ -256,14 +263,12 @@ class BusRouteEntry:
         self.__bus_stop_nr = bus_stop_nr
 
     def __eq__(self, other):
-        return (
-                self.bus_nr == other.bus_nr and
+        return (self.bus_nr == other.bus_nr and
                 self.route_code == other.route_code and
                 self.street_id == other.street_id and
                 self.team_nr == other.team_nr and
                 self.type == other.type and
-                self.bus_stop_nr == other.bus_stop_nr
-        )
+                self.bus_stop_nr == other.bus_stop_nr)
 
     @property
     def bus_nr(self):
@@ -289,6 +294,7 @@ class BusRouteEntry:
     def bus_stop_nr(self):
         return self.__bus_stop_nr
 
+    # Converts class fields into the list.
     def to_csv(self):
         result = [self.bus_nr, self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
         return result
