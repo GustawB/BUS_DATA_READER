@@ -1,5 +1,5 @@
 [tool.hatch.build.targets.wheel]
-packages = ["src/warsawbuspy"]
+packages = ["warsawbuspy"]
 
 [build-system]
 requires = ["hatchling"]
@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "warsawbuspy"
-version = "0.0.3"
+version = "0.0.5"
 authors = [
   { name="Gustaw Blachowski", email="gustaw.blachowski@gmail.com" },
 ]
