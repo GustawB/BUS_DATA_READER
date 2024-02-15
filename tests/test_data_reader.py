@@ -3,8 +3,8 @@ import os.path
 import pytest
 from unittest.mock import MagicMock, patch
 
-from buspy.data_holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
-from buspy.readers.data_reader import DataReader
+from warsawbuspy import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
+from warsawbuspy import DataReader
 
 
 class TestDataReaderClass:
@@ -452,7 +452,7 @@ class TestDataReaderClass:
     def test_bus_data_reading(self, mock_bus_locations_1,
                               mock_bus_locations_2,
                               expected_bus_locations):
-        with patch('buspy.readers.data_reader.requests.get') as mock_get:
+        with patch('warsawbuspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_locations_1
             dr = DataReader('random_apikey')
@@ -471,7 +471,7 @@ class TestDataReaderClass:
             dr.dump_bus_data('test_files/test_bus_data.csv')
 
     def test_bus_stop_data_reading(self, mock_bus_stop_data, expected_bus_stop):
-        with patch('buspy.readers.data_reader.requests.get') as mock_get:
+        with patch('warsawbuspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_stop_data
             dr = DataReader('random_apikey')
@@ -489,7 +489,7 @@ class TestDataReaderClass:
                                         mock_bus_for_stops_data_1001_02,
                                         mock_bus_for_stops_data_1002_03,
                                         expected_bus_for_stop):
-        with patch('buspy.readers.data_reader.requests.get') as mock_get:
+        with patch('warsawbuspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.side_effect = [mock_bus_for_stops_data_1000_01,
                                                       mock_bus_for_stops_data_1001_02,
@@ -509,7 +509,7 @@ class TestDataReaderClass:
                                     mock_schedules_1001_02_888,
                                     mock_schedules_1002_03_666,
                                     expected_schedules):
-        with patch('buspy.readers.data_reader.requests.get') as mock_get:
+        with patch('warsawbuspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.side_effect = [mock_schedules_1000_01_666,
                                                       mock_schedules_1000_01_777,
@@ -530,7 +530,7 @@ class TestDataReaderClass:
 
     def test_bus_routes_data_reading(self, mock_bus_routes,
                                      expected_bus_routes):
-        with patch('buspy.readers.data_reader.requests.get') as mock_get:
+        with patch('warsawbuspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)
             mock_get.return_value.json.return_value = mock_bus_routes
             dr = DataReader('random_apikey')

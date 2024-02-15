@@ -1,10 +1,10 @@
 import time
+import datetime
 import csv
 import os
 import requests
 
-from buspy.data_holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
-import datetime
+from warsawbuspy.holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
 
 
 # Class responsible for fetching the data from the https://api.um.warszawa.pl.

@@ -12,7 +12,6 @@ class Location:
         self.__longitude = longitude
         self.__latitude = latitude
         self.__street_name = street_name
-        # print(response.json()['results']['1']['street'])
 
     def __eq__(self, other):
         dist = self.distance(other)

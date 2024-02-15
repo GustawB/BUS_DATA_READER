@@ -1,0 +1,26 @@
+[tool.hatch.build.targets.wheel]
+packages = ["src/warsawbuspy"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "warsawbuspy"
+version = "0.0.3"
+authors = [
+  { name="Gustaw Blachowski", email="gustaw.blachowski@gmail.com" },
+]
+description = "A package containing a functionality of readint the data from the https://api.um.warszawa.pl, analyzing it and displaying results of the analyzis."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["pandas", "matplotlib", "requests", "datetime"]
+
+[project.urls]
+Homepage = "https://github.com/GustawB/BUS_DATA_READER"
+Issues = "https://github.com/GustawB/BUS_DATA_READER/issues"

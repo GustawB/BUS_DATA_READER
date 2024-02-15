@@ -1,7 +1,7 @@
 import csv
 import os.path
 
-from buspy.data_holders.data_holders import ZTMBus, BusRouteEntry, BusStop
+from warsawbuspy.holders.data_holders import ZTMBus, BusRouteEntry, BusStop
 
 
 # Class responsible for analyzing the data collected by the DataReader class.
