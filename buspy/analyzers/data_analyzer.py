@@ -87,8 +87,9 @@ class DataAnalyzer:
 
     # Function that reads the bus schedules data from the given directory. dir_length
     # is used to extract bus team, bus post and bus nr from the file name.
-    def read_schedules_data(self, dir_with___schedules, dir_length):
-        with os.scandir(dir_with___schedules) as it:
+    def read_schedules_data(self, dir_with_schedules):
+        dir_length = len(dir_with_schedules)
+        with os.scandir(dir_with_schedules) as it:
             for entry in it:
                 # Extracting bus team, bus post and bus nr from the file name.
                 team = entry.path[dir_length + 1:dir_length + 5]
