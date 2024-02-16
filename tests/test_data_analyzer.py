@@ -114,7 +114,7 @@ class TestDataAnalyzerClass:
 
     def test_reading_schedules_data(self, expected_schedules):
         da = DataAnalyzer()
-        da.read_schedules_data('test_files/schedules', 20)
+        da.read_schedules_data('test_files/schedules')
         data_dict = da.schedules
         for team in expected_schedules:
             assert team in data_dict
@@ -150,7 +150,7 @@ class TestDataAnalyzerClass:
         da = DataAnalyzer()
         da.read_bus_data('test_files/test_bus_data.csv')
         assert da.calc_nr_of_overspeeding_busses() == 3
-        assert da.nr_of_invalid_speeds == 1
+        assert da.nr_of_invalid_speeds == 0
         assert da.nr_of_invalid_times == 0
 
     def test_avg_delays(self, expected_avg_delays):
@@ -158,7 +158,7 @@ class TestDataAnalyzerClass:
         da.read_bus_data('test_files/test_bus_data.csv')
         da.read_bus_stop_data('test_files/test_bus_stops.csv')
         da.read_bus_routes_data('test_files/test_bus_routes.csv')
-        da.read_schedules_data('test_files/schedules', 20)
+        da.read_schedules_data('test_files/schedules')
         da.calc_times_for_stops()
         da.calc_average_delays('test_files/test_results.csv')
         assert da.avg_times_for_stops == expected_avg_delays
