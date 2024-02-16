@@ -220,7 +220,7 @@ class DataReader:
                 self.__bus_routes[bus_nr][route_type] = [None] * max_nr
                 for nr in response.json()['result'][bus_nr][route_type]:
                     helper = response.json()['result'][bus_nr][route_type][nr]
-                    self.__bus_routes[bus_nr][route_type][int(nr)] = (
+                    self.__bus_routes[bus_nr][route_type][int(nr) - 1] = (
                         BusRouteEntry(bus_nr, route_type, helper['ulica_id'], helper['nr_zespolu'],
                                       helper['typ'], helper['nr_przystanku']))
 
@@ -232,6 +232,6 @@ class DataReader:
             csv_writer.writerow(data_headers)
             for bus_nr in self.__bus_routes:
                 for route_type in self.__bus_routes[bus_nr]:
-                    for data in self.__bus_routes[bus_nr][route_type]:
-                        csv_writer.writerow(self.__bus_routes[bus_nr][route_type][data].to_csv())
+                    for index in range(len(self.__bus_routes[bus_nr][route_type])):
+                        csv_writer.writerow(self.__bus_routes[bus_nr][route_type][index].to_csv())
         self.__bus_routes.clear()

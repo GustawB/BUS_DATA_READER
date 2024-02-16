@@ -3,8 +3,8 @@ import os.path
 import pytest
 from unittest.mock import MagicMock, patch
 
-from warsawbuspy import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
-from warsawbuspy import DataReader
+from warsawbuspy.holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
+from warsawbuspy.readers.data_reader import DataReader
 
 
 class TestDataReaderClass:
@@ -428,24 +428,14 @@ class TestDataReaderClass:
     def expected_bus_routes(self):
         return {
             "666": {
-                "TP-OST": {
-                    1: BusRouteEntry("666", "TP-OST",
-                                     "2000", "1000", "2", "01"),
-                    2: BusRouteEntry("666", "TP-OST",
-                                     "2002", "1002", "1", "03")
-                }
+                "TP-OST": [BusRouteEntry("666", "TP-OST", "2000", "1000", "2", "01"),
+                           BusRouteEntry("666", "TP-OST", "2002", "1002", "1", "03")]
             },
             "777": {
-                "TP-TSO": {
-                    1: BusRouteEntry("777", "TP-TSO",
-                                     "2000", "1000", "7", "01")
-                }
+                "TP-TSO": [BusRouteEntry("777", "TP-TSO", "2000", "1000", "7", "01")]
             },
             "888": {
-                "TP-STO": {
-                    1: BusRouteEntry("888", "TP-STO",
-                                     "2001", "1001", "9", "02")
-                }
+                "TP-STO": [BusRouteEntry("888", "TP-STO", "2001", "1001", "9", "02")]
             }
         }
 
@@ -540,8 +530,8 @@ class TestDataReaderClass:
                 assert bus in data_dict
                 for route in expected_bus_routes[bus]:
                     assert route in data_dict[bus]
-                    for index in expected_bus_routes[bus][route]:
-                        assert index in data_dict[bus][route]
+                    assert len(expected_bus_routes[bus][route]) == len(data_dict[bus][route])
+                    for index in range(len(expected_bus_routes[bus][route])):
                         assert expected_bus_routes[bus][route][index] == data_dict[bus][route][index]
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')

@@ -1,7 +1,7 @@
 import pytest
 
-from warsawbuspy import DataAnalyzer
-from warsawbuspy import ZTMBus, BusStop, BusRouteEntry
+from warsawbuspy.analyzers.data_analyzer import DataAnalyzer
+from warsawbuspy.holders.data_holders import ZTMBus, BusStop, BusRouteEntry
 
 
 class TestDataAnalyzerClass:
