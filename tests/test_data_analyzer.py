@@ -152,6 +152,9 @@ class TestDataAnalyzerClass:
         assert da.calc_nr_of_overspeeding_busses() == 3
         assert da.nr_of_invalid_speeds == 0
         assert da.nr_of_invalid_times == 0
+        da.calc_data_for_overspeed_percentages()
+        da.calc_overspeed_percentages()
+        da.dump_overspeed_percentages('test_files/test_overspeed_percentages.csv')
 
     def test_avg_delays(self, expected_avg_delays):
         da = DataAnalyzer()
@@ -162,4 +165,5 @@ class TestDataAnalyzerClass:
         da.calc_times_for_stops()
         da.calc_average_delays('test_files/test_results.csv')
         assert da.avg_times_for_stops == expected_avg_delays
+        da.dump_average_delays('test_files/test_avg_delays.csv')
 
