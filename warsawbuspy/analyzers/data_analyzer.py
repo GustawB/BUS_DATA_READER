@@ -224,7 +224,7 @@ class DataAnalyzer:
     # Function that finds every street for which at least one bus was overspeeding,
     # and then for each one of them it finds the nr of those buses, as well as the nr of
     # all buses that were going through it.
-    def calc_data_for_overspeed_percentages(self):
+    def __calc_data_for_overspeed_percentages(self):
         self.__nr_of_invalid_times = 0
         iterator = 0
         for bus_nr in self.__bus_data:
@@ -239,6 +239,34 @@ class DataAnalyzer:
                         self.__points_with_no_overspeeds(self.__bus_data[bus_nr][vehicle_nr][i + 1])
                     elif speed > 50:
                         self.__points_with_overspeeds(self.__bus_data[bus_nr][vehicle_nr][i + 1])
+
+    # Function that calculates the percentage of ovespeeding buses for every
+    # registered location (location where at least one bus was overspeeding).
+    def calc_overspeed_percentages(self):
+        self.__calc_data_for_overspeed_percentages()
+        for key in self.__points_of_overspeed:
+            self.__overspeed_percentages[key] = (float(self.__points_of_overspeed[key]) /
+                                                 float(self.__nr_of_all_busses_for_ovespeed_points[key]))
+
+    # Function that dumps overspeed percentages data into the given .csv file, and locations of those
+    # incidents into the .geojson file.
+    # This operation deletes data in __overspeed_percentages, __points_of_overspeed, __ovespeeds_json
+    # and __nr_of_all_busses_for_ovespeed_points.
+    def dump_overspeed_percentages(self, file_to_dump_percentages, file_to_dump_locations):
+        data_headers = ['Street_name', 'Percentage']
+        with open(file_to_dump_percentages, 'w', newline='', encoding='utf16') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for data in sorted(self.__overspeed_percentages, key=self.__overspeed_percentages.get, reverse=True):
+                data_list = [str(data), str(self.__overspeed_percentages[data] * 100)]
+                csv_writer.writerow(data_list)
+        with open(file_to_dump_locations, 'w') as geojson_file:
+            data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
+            geojson_file.write(data_to_dump)
+        self.__overspeed_percentages.clear()
+        self.__points_of_overspeed.clear()
+        self.__nr_of_all_busses_for_ovespeed_points.clear()
+        self.__overspeeds_json.clear()
 
     # Function that finds the delay for the given bus on the given stop.
     def calc_time_difference(self, bus_line, bus_brigade, bus_time, bs_data, route_code):
@@ -347,33 +375,6 @@ class DataAnalyzer:
                             else:
                                 self.__times_for_stops[key] = found_bus_stops[key]
                                 self.__nr_of_buses_for_stops[key] = 1
-
-    # Function that calculates the percentage of ovespeeding buses for every
-    # registered location (location where at least one bus was overspeeding).
-    def calc_overspeed_percentages(self):
-        for key in self.__points_of_overspeed:
-            self.__overspeed_percentages[key] = (float(self.__points_of_overspeed[key]) /
-                                                 float(self.__nr_of_all_busses_for_ovespeed_points[key]))
-
-    # Function that dumps overspeed percentages data into the given .csv file, and locations of those
-    # incidents into the .geojson file.
-    # This operation deletes data in __overspeed_percentages, __points_of_overspeed, __ovespeeds_json
-    # and __nr_of_all_busses_for_ovespeed_points.
-    def dump_overspeed_percentages(self, file_to_dump_percentages, file_to_dump_locations):
-        data_headers = ['Street_name', 'Percentage']
-        with open(file_to_dump_percentages, 'w', newline='', encoding='utf16') as file:
-            csv_writer = csv.writer(file)
-            csv_writer.writerow(data_headers)
-            for data in sorted(self.__overspeed_percentages, key=self.__overspeed_percentages.get, reverse=True):
-                data_list = [str(data), str(self.__overspeed_percentages[data] * 100)]
-                csv_writer.writerow(data_list)
-        with open(file_to_dump_locations, 'w') as geojson_file:
-            data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
-            geojson_file.write(data_to_dump)
-        self.__overspeed_percentages.clear()
-        self.__points_of_overspeed.clear()
-        self.__nr_of_all_busses_for_ovespeed_points.clear()
-        self.__overspeeds_json.clear()
 
     # Function that calculates avg delays for every bus stop and then dumps this data
     # into the given file. Every bus stop gets assigned a key build from

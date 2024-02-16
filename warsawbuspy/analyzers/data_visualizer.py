@@ -38,8 +38,7 @@ class DataVisualizer:
             response = requests.get('https://raw.githubusercontent.com/ppatrzyk/polska-geojson/master/powiaty/powiaty'
                                     '-medium.geojson')
             warsaw_map_coords = response.json()['features'][301]
-            temp = response.json()['features'][301]
-            data_to_write = json.dumps(temp, indent=4)
+            data_to_write = json.dumps(warsaw_map_coords, indent=4)
             with open('warsaw_map.geojson', 'w') as file:
                 file.write(data_to_write)
         warsaw_map = gpd.read_file('warsaw_map.geojson')

@@ -20,10 +20,6 @@ class DataReader:
         self.__bus_routes = {}
 
     @property
-    def api_key(self):
-        return self.__api_key
-
-    @property
     def bus_data(self):
         return self.__bus_data
 
@@ -98,11 +94,13 @@ class DataReader:
     def get_stops_data(self):
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
+        while response.status_code != 200:
+            response = requests.get(
+                'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
         for data in response.json()['result']:
             bs = BusStop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
                          data['values'][1]['value'], data['values'][6]['value'],
                          float(data['values'][5]['value']), float(data['values'][4]['value']))
-
             if bs.team_name in self.__bus_stop_data:
                 self.__bus_stop_data[bs.team_name].append(bs)
             else:
@@ -132,6 +130,11 @@ class DataReader:
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=88cd555f-6f31-43ca-9de4'
                         '-66c479ad5942&busstopId=' +
                         line[2] + '&busstopNr=' + line[3] + '&apikey=' + self.__api_key)
+                    while response.status_code != 200:
+                        response = requests.get(
+                            'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=88cd555f-6f31-43ca-9de4'
+                            '-66c479ad5942&busstopId=' +
+                            line[2] + '&busstopNr=' + line[3] + '&apikey=' + self.__api_key)
                     for data in response.json()['result']:
                         bus = BusForStop(line[2], line[3], data['values'][0]['value'])
                         if len(bus.bus) == 3:  # Checking if what we received is actually a bus number
@@ -162,11 +165,16 @@ class DataReader:
             nr_of_lines = 0
             for line in csv_reader:  # Going through every combination of bus stop, bus post and bus nr.
                 nr_of_lines = nr_of_lines + 1
-                if nr_of_lines > 1 and len(line) == 3:  # Diuble checking if we are actually operating with a bus nr.
+                if nr_of_lines > 1 and len(line) == 3:  # Double-checking if we are actually operating with a bus nr.
                     response = requests.get(
                         'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e'
                         '-60518c9f3238&busstopId=' +
                         line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.__api_key)
+                    while response.status_code != 200:
+                        response = requests.get(
+                            'https://api.um.warszawa.pl/api/action/dbtimetable_get/?id=e923fa0e-d96c-43f9-ae6e'
+                            '-60518c9f3238&busstopId=' +
+                            line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.__api_key)
                     for data in response.json()['result']:  # Iterating over the received schedule.
                         time_data = self.time_parser(data['values'][5]['value'])
                         scl = BusScheduleEntry(data['values'][2]['value'], data['values'][3]['value'],
@@ -204,6 +212,9 @@ class DataReader:
     def get_bus_routes(self):
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.__api_key)
+        while response.status_code != 200:
+            response = requests.get(
+                'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.__api_key)
         for bus_nr in response.json()['result']:
             for route_type in response.json()['result'][bus_nr]:
                 # Bus routes entries are numbered, but they usually aren't sorted by those numbers,
