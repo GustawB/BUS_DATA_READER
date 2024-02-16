@@ -268,7 +268,7 @@ class DataAnalyzer:
                 break
             for route_code in self.__bus_routes_data[next_bus.line]:
                 for bre in self.__bus_routes_data[next_bus.line][route_code]:
-                    # Just in case data magically contains Z.. buses that it shouldn't contain.
+                    # Just in case data magically contains 'Z..' buses that it shouldn't contain.
                     if next_bus.line[0] != 'Z':
                         bs_data = self.__bus_stop_data[bre.team_nr][bre.bus_stop_nr]
                         # Locations are equal, if the distance between them is <= 175 meters.
@@ -277,7 +277,7 @@ class DataAnalyzer:
                                                               local_time_data, bs_data, route_code)
                             # Finding the smallest abs(delay), because a bus could stand on lights
                             # before arriving to the stop, and those lights could be closer to the bus stop
-                            # than 175m, so we want to the the delay that represents the bus being the closest
+                            # than 175m, so we want to the delay that represents the bus being the closest
                             # to the bus stop.
                             if delay is not None and delay < 100000 and bs_data in found_bus_stops:
                                 temp = found_bus_stops[bs_data]
@@ -294,8 +294,8 @@ class DataAnalyzer:
         return found_bus_stops
 
     # Function that finds the sum of all delays for every bus stop as well as the number of busses
-    # that arrived too soon or too late for each one of them.
-    def calc_times_for_stops(self):
+    # that arrived fo every bus stop.
+    def calc_bus_stops_statistics(self):
         calculated_buses = {}
         for bus_nr in self.__bus_data:
             for vehicle_nr in self.__bus_data[bus_nr]:
@@ -366,8 +366,7 @@ class DataAnalyzer:
 
     # Function that dumps average delays data into the given file, but only as long as the
     # calculated data is between upper limits and lower limits (as long as they were
-    # set by the user). This operation deletes data in __avg_times_for_stops,
-    # __nr_of_buses_for_stops and __times_for_stops.
+    # set by the user). This operation deletes data in __avg_times_for_stops and __times_for_stops.
     def dump_average_delays(self, file_to_dump, upper_limit=-1, lower_limit=1):
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             data_headers = ['Bus_stop', 'Avg_time']
@@ -382,8 +381,20 @@ class DataAnalyzer:
                     data_list = [data, str(self.__avg_times_for_stops[data])]
                     csv_writer.writerow(data_list)
         self.__avg_times_for_stops.clear()
-        self.__nr_of_buses_for_stops.clear()
         self.__times_for_stops.clear()
+
+    # Function that dumps the information about the number of buses that reached every bus stop
+    # in the given .csv file stamp into the given file. This operation clears data in
+    # __nr_of_buses_for_stops.
+    def dump_nr_of_buses_for_each_stop(self, file_to_dump):
+        with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
+            data_headers = ['Bus_stop', 'Nr_of_buses']
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data_headers)
+            for key in self.__nr_of_buses_for_stops:
+                row = [key, self.__nr_of_buses_for_stops[key]]
+                csv_writer.writerow(row)
+        self.__nr_of_buses_for_stops.clear()
 
     # Function that dumps the data associated with data errors from the API
     # into the given file.
