@@ -3,6 +3,7 @@ import json
 import os.path
 
 from warsawbuspy.holders.data_holders import ZTMBus, BusRouteEntry, BusStop
+from warsawbuspy.utility.data_utility import assert_file_extension
 
 
 # Class responsible for analyzing the data collected by the DataReader class.
@@ -113,6 +114,7 @@ class DataAnalyzer:
 
     # Function that reads the bus data from the given file.
     def read_bus_data(self, bus_filename: str) -> None:
+        assert_file_extension(bus_filename, '.csv')
         with open(bus_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -133,6 +135,7 @@ class DataAnalyzer:
 
     # Function that reads the bus stop data from the given file.
     def read_bus_stop_data(self, bus_stop_filename: str) -> None:
+        assert_file_extension(bus_stop_filename, '.csv')
         with open(bus_stop_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -146,6 +149,7 @@ class DataAnalyzer:
 
     # Function that reads the bus routes data from the given file.
     def read_bus_routes_data(self, bus_routes_filename: str) -> None:
+        assert_file_extension(bus_routes_filename, '.csv')
         with open(bus_routes_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -206,6 +210,7 @@ class DataAnalyzer:
     # Function that dumps the locations of the overspeeds into the given .geojson file.
     # This operation clears the data in __overspeed_json.
     def dump_overspeed_locations(self, file_to_dump_locations: str) -> None:
+        assert_file_extension(file_to_dump_locations, '.csv')
         with open(file_to_dump_locations, 'w') as geojson_file:
             data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
             geojson_file.write(data_to_dump)
@@ -256,6 +261,7 @@ class DataAnalyzer:
     # This operation deletes data in __overspeed_percentages, __points_of_overspeed
     # and __nr_of_all_busses_for_ovespeed_points.
     def dump_overspeed_percentages(self, file_to_dump_percentages: str) -> None:
+        assert_file_extension(file_to_dump_percentages, '.csv')
         data_headers = ['Street_name', 'Percentage']
         with open(file_to_dump_percentages, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -395,6 +401,7 @@ class DataAnalyzer:
     # calculated data is between upper limits and lower limits (as long as they were
     # set by the user). This operation deletes data in __avg_times_for_stops and __times_for_stops.
     def dump_average_delays(self, file_to_dump: str, upper_limit: float = -1, lower_limit: float = 1) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             data_headers = ['Bus_stop', 'Avg_time']
             csv_writer = csv.writer(file)
@@ -414,6 +421,7 @@ class DataAnalyzer:
     # in the given .csv file stamp into the given file. This operation clears data in
     # __nr_of_buses_for_stops.
     def dump_nr_of_buses_for_each_stop(self, file_to_dump: str) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             data_headers = ['Bus_stop', 'Nr_of_buses']
             csv_writer = csv.writer(file)
@@ -427,6 +435,7 @@ class DataAnalyzer:
     # into the given file. This operation clears all the data related to the
     # invalid stats.
     def dump_invalid_data_stats(self, file_to_dump: str) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         data_headers = ['Error_type', 'nr_of_entries']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)

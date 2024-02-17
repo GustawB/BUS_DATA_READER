@@ -6,7 +6,7 @@ import os
 import requests
 
 from warsawbuspy.holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
-from warsawbuspy.utility.data_utility import time_parser
+from warsawbuspy.utility.data_utility import time_parser, assert_file_extension
 
 
 # Class responsible for fetching the data from the https://api.um.warszawa.pl.
@@ -79,6 +79,7 @@ class DataReader:
     # Function that stores all the gathered data about buses locations into the given file.
     # This operation clears all data in the __bus_data dict.
     def dump_bus_data(self, file_to_dump: str) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -108,6 +109,7 @@ class DataReader:
     # Function that stores data about bus stops into the given file. This operation clears all data
     # in the __bus_stop_data dict.
     def dump_stops_data(self, file_to_dump: str) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         data_headers = ['Team_name', 'Street_id', 'Team', 'Post', 'Direction', 'Longitude', 'Latitude']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -119,6 +121,7 @@ class DataReader:
 
     # Function that retrieves the information about every bus that goes through every bus stop.
     def get_buses_for_stops(self, bus_stop_list_file: str) -> None:
+        assert_file_extension(bus_stop_list_file, '.csv')
         with open(bus_stop_list_file, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
             nr_of_lines = 0
@@ -146,6 +149,7 @@ class DataReader:
     # Function that stores data about bus numbers for every bus stop into the given file.
     # This operation clears every data in the __buses_for_stops dict.
     def dump_buses_for_stops(self, file_to_dump: str) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         data_headers = ['Team', 'Post', 'Bus']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -158,8 +162,9 @@ class DataReader:
     # Function that retrieves the bus schedule for every existing combination of bus stop, bus post and bus nr.
     # Those combinations are available i __buses_for_stops_file
     # that should be created by get_buses_for_stops() function.
-    def get_bus_schedules(self, __buses_for_stops_file: str) -> None:
-        with open(__buses_for_stops_file, 'r', encoding='utf16') as file:
+    def get_bus_schedules(self, buses_for_stops_file: str) -> None:
+        assert_file_extension(buses_for_stops_file, '.csv')
+        with open(buses_for_stops_file, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
             nr_of_lines = 0
             for line in csv_reader:  # Going through every combination of bus stop, bus post and bus nr.
@@ -239,6 +244,7 @@ class DataReader:
 
     # Function that dumps bus routes into the given file. This operation clears all data in the __bus_routes dict.
     def dump_bus_routes(self, file_to_dump: str) -> None:
+        assert_file_extension(file_to_dump, '.csv')
         data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Stop_team_nr', 'Stop_type', 'Stop_nr']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
