@@ -30,20 +30,22 @@ class DataVisualizer:
 
         plt.show()
 
-    # Function that draws the locations of the ovespeeding incidents on the Warsaw map. This map is fetched
-    # from the API if the file warsaw_map.geojson doesn't exist.
+    # Function that draws the locations of the ovespeeding incidents on the maps stored inside 'maps' dir
+    # (if fetched by DataReader).
     @staticmethod
     def draw_data_map(ovespeed_locations, title):
-        if not os.path.isfile('warsaw_map.geojson'):
-            response = requests.get('https://raw.githubusercontent.com/ppatrzyk/polska-geojson/master/powiaty/powiaty'
-                                    '-medium.geojson')
-            warsaw_map_coords = response.json()['features'][301]
-            data_to_write = json.dumps(warsaw_map_coords, indent=4)
-            with open('warsaw_map.geojson', 'w') as file:
-                file.write(data_to_write)
-        warsaw_map = gpd.read_file('warsaw_map.geojson')
-        base = warsaw_map.plot(color='green', edgecolor='black')
+        maps_names = ['powiat Warszawa', 'powiat pruszkowski', 'powiat piaseczyński', 'powiat otwocki',
+                      'powiat miński', 'powiat wołomiński', 'powiat legionowski', 'powiat warszawski zachodni',
+                      'powiat nowodworski']
+        base = None
+        for name in maps_names:
+            map_data = gpd.read_file('maps/' + name + '.geojson')
+            if base is None:
+                base = map_data.plot(color='yellow', edgecolor='black')
+            else:
+                base = map_data.plot(ax=base, color='green', edgecolor='black')
         locations_data = gpd.read_file(ovespeed_locations)
         locations_data.plot(ax=base, color='red', markersize=5)
         plt.title(title)
+        plt.legend(["Overspeed locations"], loc="upper left")
         plt.show()

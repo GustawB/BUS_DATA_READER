@@ -1,3 +1,4 @@
+import json
 import time
 import datetime
 import csv
@@ -254,3 +255,25 @@ class DataReader:
                     for index in range(len(self.__bus_routes[bus_nr][route_type])):
                         csv_writer.writerow(self.__bus_routes[bus_nr][route_type][index].to_csv())
         self.__bus_routes.clear()
+
+    # Function that fetches the maps data for the DataVisualizer and stores it in .geojson files in 'maps' dir.
+    # In this case, file names are predefined.
+    @staticmethod
+    def get_and_dump_maps_data():
+        if not os.path.isdir('maps'):
+            os.mkdir('maps')
+        response = requests.get('https://raw.githubusercontent.com/ppatrzyk/polska-geojson/master/powiaty/powiaty'
+                                '-medium.geojson')
+        while response.status_code != 200:
+            response = requests.get('https://raw.githubusercontent.com/ppatrzyk/polska-geojson/master/powiaty/powiaty'
+                                    '-medium.geojson')
+        maps_names = ['powiat Warszawa', 'powiat pruszkowski', 'powiat piaseczyński', 'powiat otwocki',
+                      'powiat miński', 'powiat wołomiński', 'powiat legionowski', 'powiat warszawski zachodni',
+                      'powiat nowodworski']
+        for data in response.json()['features']:
+            if data['properties']['nazwa'] in maps_names:
+                if ((data['properties']['nazwa'] == 'powiat nowodworski' and data['id'] == 164) or
+                        (data['properties']['nazwa'] != 'powiat nowodworski')):
+                    data_to_write = json.dumps(data, indent=4)
+                    with open('maps/' + data['properties']['nazwa'] + '.geojson', 'w') as file:
+                        file.write(data_to_write)

@@ -426,8 +426,8 @@ class DataAnalyzer:
             data_headers = ['Bus_stop', 'Nr_of_buses']
             csv_writer = csv.writer(file)
             csv_writer.writerow(data_headers)
-            for key in self.__nr_of_buses_for_stops:
-                row = [key, self.__nr_of_buses_for_stops[key]]
+            for bs in sorted (self.__nr_of_buses_for_stops, key=self.__nr_of_buses_for_stops.get, reverse=True):
+                row = [bs.team_name + '_' + bs.post, self.__nr_of_buses_for_stops[bs]]
                 csv_writer.writerow(row)
         self.__nr_of_buses_for_stops.clear()
 
