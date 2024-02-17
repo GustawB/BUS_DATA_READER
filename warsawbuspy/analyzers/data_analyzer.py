@@ -186,7 +186,7 @@ class DataAnalyzer:
                     curr_bus_data = self.__bus_data[bus_line][bus][i]
                     next_bus_data = self.__bus_data[bus_line][bus][i + 1]
                     dist = next_bus_data.location.distance(curr_bus_data.location)
-                    speed = self.normalise_avg_speed(dist, curr_bus_data, next_bus_data)
+                    speed = self.__normalise_avg_speed(dist, curr_bus_data, next_bus_data)
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
                         self.__overspeeds_json['features'].append({
