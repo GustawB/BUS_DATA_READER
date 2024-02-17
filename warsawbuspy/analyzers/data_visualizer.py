@@ -27,13 +27,12 @@ class DataVisualizer:
         plt.xlabel(data_headers[0])
         plt.ylabel(data_headers[1])
         plt.xticks(rotation=30, ha='right')
-
         plt.show()
 
     # Function that draws the locations of the ovespeeding incidents on the maps stored inside 'maps' dir
     # (if fetched by DataReader).
     @staticmethod
-    def draw_data_map(ovespeed_locations, title):
+    def draw_overspeed_map(ovespeed_locations, title):
         maps_names = ['powiat Warszawa', 'powiat pruszkowski', 'powiat piaseczyński', 'powiat otwocki',
                       'powiat miński', 'powiat wołomiński', 'powiat legionowski', 'powiat warszawski zachodni',
                       'powiat nowodworski']

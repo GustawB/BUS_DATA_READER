@@ -10,8 +10,7 @@ class DataAnalyzer:
     __slots__ = ('__bus_data', '__bus_stop_data', '__bus_routes_data', '__points_of_overspeed',
                  '__nr_of_all_busses_for_ovespeed_points', '__overspeed_percentages', '__times_for_stops',
                  '__nr_of_buses_for_stops', '__avg_times_for_stops', '__schedules', '__overspeeds_json',
-                 '__nr_of_invalid_speeds', '__nr_of_invalid_times',
-                 '__nr_of_non_existing_schedules', '__nr_of_unread_buses', '__unread_stops')
+                 '__nr_of_invalid_speeds', '__nr_of_invalid_times', '__nr_of_unread_buses', '__unread_stops')
 
     def __init__(self):
         self.__bus_data = {}
@@ -31,7 +30,6 @@ class DataAnalyzer:
 
         self.__nr_of_invalid_speeds = 0
         self.__nr_of_invalid_times = 0
-        self.__nr_of_non_existing_schedules = 0
         self.__nr_of_unread_buses = 0
 
     @property
@@ -287,8 +285,7 @@ class DataAnalyzer:
                     if abs(difference) < abs(min_diff):
                         min_diff = difference
         except KeyError:
-            # API returns no data for some valid combinations. Those situations are counted for statistics.
-            self.__nr_of_non_existing_schedules += 1
+            # API returns no data for some valid combinations. I'm skipping those.
             return None
         except ValueError:
             return None
@@ -445,8 +442,6 @@ class DataAnalyzer:
             csv_writer.writerow(data_list)
             data_list = ['unread_busses', str(self.__nr_of_unread_buses)]
             csv_writer.writerow(data_list)
-            data_list = ['non_existing_schedules', str(self.__nr_of_non_existing_schedules)]
-            csv_writer.writerow(data_list)
             nr_of_stops = 0
             for key in self.__unread_stops:
                 nr_of_stops += len(self.__unread_stops[key])
@@ -455,5 +450,4 @@ class DataAnalyzer:
         self.__nr_of_invalid_speeds = 0
         self.__nr_of_invalid_times = 0
         self.__nr_of_unread_buses = 0
-        self.__nr_of_non_existing_schedules = 0
         self.__unread_stops.clear()
