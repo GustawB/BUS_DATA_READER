@@ -210,7 +210,7 @@ class DataAnalyzer:
     # Function that dumps the locations of the overspeeds into the given .geojson file.
     # This operation clears the data in __overspeed_json.
     def dump_overspeed_locations(self, file_to_dump_locations: str) -> None:
-        assert_file_extension(file_to_dump_locations, '.csv')
+        assert_file_extension(file_to_dump_locations, '.geojson')
         with open(file_to_dump_locations, 'w') as geojson_file:
             data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
             geojson_file.write(data_to_dump)

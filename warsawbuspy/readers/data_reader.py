@@ -62,7 +62,7 @@ class DataReader:
                     bus = None
                     # API sometimes sends some crazy times (eg. 131:20), so I'm just skipping them here.
                     try:
-                        if is_location_valid(helper['Lon'], helper['Lat']):
+                        if is_location_valid(float(helper['Lon']), float(helper['Lat'])):
                             time_data = time_parser(helper['Time'])
                             bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                                          helper['Brigade'], time_data)
