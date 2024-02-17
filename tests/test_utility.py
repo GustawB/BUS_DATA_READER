@@ -1,6 +1,6 @@
 import pytest
 
-from warsawbuspy.utility.data_utility import time_parser, assert_file_extension
+from warsawbuspy.utility.data_utility import time_parser, assert_file_extension, is_location_valid
 from warsawbuspy.utility.exceptions import InvalidFileExtensionException
 
 
@@ -25,4 +25,9 @@ class TestUtility:
         with pytest.raises(InvalidFileExtensionException) as e_info:
             assert_file_extension('ugabuba.json', '.csv')
 
-
+    def test_location_validity(self):
+        assert is_location_valid(21.00, 54.00) is True
+        assert is_location_valid(21.00, 91.00) is False
+        assert is_location_valid(-10.00, 54.00) is True
+        assert is_location_valid(-200.00, 54.00) is False
+        assert is_location_valid(300.00, -1000.00) is False
