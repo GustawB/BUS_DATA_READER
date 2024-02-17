@@ -6,6 +6,7 @@ import os
 import requests
 
 from warsawbuspy.holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
+from warsawbuspy.utility.data_utility import time_parser
 
 
 # Class responsible for fetching the data from the https://api.um.warszawa.pl.
@@ -40,14 +41,6 @@ class DataReader:
     def bus_routes(self) -> dict:
         return self.__bus_routes
 
-    # API sends times like 25:01:24 for schedules etc., so this function parses that back
-    # into normal time format (for 25:00:00 it would be 01:00:00).
-    @staticmethod
-    def time_parser(time_data: str) -> str:
-        if '24' <= time_data[:2] <= '29':
-            time_data = '0' + str(int(time_data[:2]) % 24) + time_data[2:]
-        return time_data
-
     # Function that retrieves data bout bus locations every 'sample_length' seconds 'nr_of_samples' times.
     def get_bus_data(self, nr_of_samples: int, sample_length: int, time_offset: int = -1) -> None:
         url = ('https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= '
@@ -68,7 +61,7 @@ class DataReader:
                 if helper['Lines'][0] != 'Z':
                     # API sometimes sends some crazy times (eg. 131:20), so I'm just skipping them here.
                     try:
-                        time_data = self.time_parser(helper['Time'])
+                        time_data = time_parser(helper['Time'])
                         bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
                                      helper['Brigade'], time_data)
                     except KeyError:
@@ -183,7 +176,7 @@ class DataReader:
                             line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.__api_key)
                     for data in response.json()['result']:  # Iterating over the received schedule.
                         try:  # Skipping invalid times send by the API.
-                            time_data = self.time_parser(data['values'][5]['value'])
+                            time_data = time_parser(data['values'][5]['value'])
                             scl = BusScheduleEntry(data['values'][2]['value'], data['values'][3]['value'],
                                                    data['values'][4]['value'], time_data)
                         except KeyError:

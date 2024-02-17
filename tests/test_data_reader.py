@@ -536,13 +536,3 @@ class TestDataReaderClass:
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')
             dr.dump_bus_routes('test_files/test_bus_routes.csv')
-
-    def test_time_parser(self):
-        dr = DataReader('random_apikey')
-        assert dr.time_parser('24:00:00') == '00:00:00'
-        assert dr.time_parser('25:00:00') == '01:00:00'
-        assert dr.time_parser('26:00:00') == '02:00:00'
-        assert dr.time_parser('27:00:00') == '03:00:00'
-        assert dr.time_parser('28:00:00') == '04:00:00'
-        assert dr.time_parser('29:00:00') == '05:00:00'
-        assert dr.time_parser('15:23:32') == '15:23:32'
