@@ -62,11 +62,16 @@ class DataReader:
                 response = requests.get(url)
             for j in range(len(response.json()['result'])):
                 helper = response.json()['result'][j]
-                time_data = self.time_parser(helper['Time'])
-                if helper['Lines'][0] != 'Z':  # Those are replacement buses, and there are problems with them
-                    # not having schedules or routes or etc., and there are only four of them, so I ignore them.
-                    bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
-                                 helper['Brigade'], time_data)
+                # Those are replacement buses, and there are problems with them
+                # not having schedules or routes or etc., and there are only four of them, so I ignore them.
+                if helper['Lines'][0] != 'Z':
+                    # API sometimes sends some crazy times (eg. 131:20), so I'm just skipping them here.
+                    try:
+                        time_data = self.time_parser(helper['Time'])
+                        bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
+                                     helper['Brigade'], time_data)
+                    except KeyError:
+                        continue
                     if 0 < time_offset < abs(bus.time_data - time_in_sec):
                         continue
                     if helper['Lines'] in self.__bus_data:
@@ -176,9 +181,12 @@ class DataReader:
                             '-60518c9f3238&busstopId=' +
                             line[0] + '&busstopNr=' + line[1] + '&line=' + line[2] + '&apikey=' + self.__api_key)
                     for data in response.json()['result']:  # Iterating over the received schedule.
-                        time_data = self.time_parser(data['values'][5]['value'])
-                        scl = BusScheduleEntry(data['values'][2]['value'], data['values'][3]['value'],
-                                               data['values'][4]['value'], time_data)
+                        try:  # Skipping invalid times send by the API.
+                            time_data = self.time_parser(data['values'][5]['value'])
+                            scl = BusScheduleEntry(data['values'][2]['value'], data['values'][3]['value'],
+                                                   data['values'][4]['value'], time_data)
+                        except KeyError:
+                            continue
                         if line[0] in self.__schedules:
                             if line[1] in self.__schedules[line[0]]:
                                 if line[2] in self.__schedules[line[0]][line[1]]:

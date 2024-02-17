@@ -89,8 +89,7 @@ class DataAnalyzer:
     def nr_of_unread_buses(self):
         return self.__nr_of_unread_buses
 
-    # Function that reads the bus schedules data from the given directory. dir_length
-    # is used to extract bus team, bus post and bus nr from the file name.
+    # Function that reads the bus schedules data from the given directory.
     def read_schedules_data(self, dir_with_schedules):
         dir_length = len(dir_with_schedules)
         with os.scandir(dir_with_schedules) as it:
@@ -164,7 +163,7 @@ class DataAnalyzer:
     # Function that checks if the speed of a bus is valid (is not negative or isn't greater than 120 km/h,
     # because buses shouldn't be able to reach speed like that in the city area). Also, it checks if the bus
     # didn't send the same information twice by comparing the times of sending the info.
-    def normalise_avg_speed(self, dist, prev_bus, next_bus):
+    def __normalise_avg_speed(self, dist, prev_bus, next_bus):
         local_length = next_bus.time_data - prev_bus.time_data
         if local_length <= 0:
             self.__nr_of_invalid_times += 1
@@ -191,16 +190,16 @@ class DataAnalyzer:
                     if speed > 50.0:
                         nr_of_overspeeds = nr_of_overspeeds + 1
                         self.__overspeeds_json['features'].append({
-                                "type": "Feature",
-                                "geometry": {
-                                    "type": "Point",
-                                    "coordinates":
-                                        [
-                                            next_bus_data.location.longitude,
-                                            next_bus_data.location.latitude
-                                        ]
-                                    }
-                            })
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates":
+                                    [
+                                        next_bus_data.location.longitude,
+                                        next_bus_data.location.latitude
+                                    ]
+                            }
+                        })
                 if nr_of_overspeeds > 0:
                     nr_of_busses_overspeeding = nr_of_busses_overspeeding + 1
         return nr_of_busses_overspeeding
@@ -233,8 +232,8 @@ class DataAnalyzer:
                 for i in range(len(self.__bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.__bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
                         self.__bus_data[bus_nr][vehicle_nr][i].location)
-                    speed = self.normalise_avg_speed(dist, self.__bus_data[bus_nr][vehicle_nr][i],
-                                                     self.__bus_data[bus_nr][vehicle_nr][i + 1])
+                    speed = self.__normalise_avg_speed(dist, self.__bus_data[bus_nr][vehicle_nr][i],
+                                                       self.__bus_data[bus_nr][vehicle_nr][i + 1])
                     if 50 >= speed >= 0:
                         self.__points_with_no_overspeeds(self.__bus_data[bus_nr][vehicle_nr][i + 1])
                     elif speed > 50:
@@ -269,7 +268,7 @@ class DataAnalyzer:
         self.__overspeeds_json.clear()
 
     # Function that finds the delay for the given bus on the given stop.
-    def calc_time_difference(self, bus_line, bus_brigade, bus_time, bs_data, route_code):
+    def __calc_time_difference(self, bus_line, bus_brigade, bus_time, bs_data, route_code):
         min_diff = 100000
         try:
             for row in self.__schedules[bs_data.team][bs_data.post][bus_line]:
@@ -289,7 +288,7 @@ class DataAnalyzer:
 
     # Function that finds delays for every bus stop that the given bus crossed between sample in
     # prev_bus and next_bus.
-    def bus_stops_in_one_sample(self, prev_bus, next_bus):
+    def __bus_stops_in_one_sample(self, prev_bus, next_bus):
         # If a bus travels with the speed of 90km/h for one minute, it will traverse 1500m.
         # So, below I'm splitting the distance that a bus completes by 9, and for each point on the
         # straight path between two points I'm looking for bus stops that it may have pass.
@@ -311,26 +310,24 @@ class DataAnalyzer:
                 break
             for route_code in self.__bus_routes_data[next_bus.line]:
                 for bre in self.__bus_routes_data[next_bus.line][route_code]:
-                    # Just in case data magically contains 'Z..' buses that it shouldn't contain.
-                    if next_bus.line[0] != 'Z':
-                        bs_data = self.__bus_stop_data[bre.team_nr][bre.bus_stop_nr]
-                        # Locations are equal, if the distance between them is <= 175 meters.
-                        if loc_c == bs_data.location:
-                            delay = self.calc_time_difference(next_bus.line, next_bus.brigade,
-                                                              local_time_data, bs_data, route_code)
-                            # Finding the smallest abs(delay), because a bus could stand on lights
-                            # before arriving to the stop, and those lights could be closer to the bus stop
-                            # than 175m, so we want to the delay that represents the bus being the closest
-                            # to the bus stop.
-                            if delay is not None and delay < 100000 and bs_data in found_bus_stops:
-                                temp = found_bus_stops[bs_data]
-                                if abs(delay) < abs(temp):
-                                    found_bus_stops[bs_data] = delay
-                                elif abs(delay) == abs(temp):
-                                    found_bus_stops[bs_data] = max(delay, temp)
-                            elif delay is not None and delay < 100000:
+                    bs_data = self.__bus_stop_data[bre.team_nr][bre.bus_stop_nr]
+                    # Locations are equal, if the distance between them is <= 175 meters.
+                    if loc_c == bs_data.location:
+                        delay = self.__calc_time_difference(next_bus.line, next_bus.brigade,
+                                                            local_time_data, bs_data, route_code)
+                        # Finding the smallest abs(delay), because a bus could stand on lights
+                        # before arriving to the stop, and those lights could be closer to the bus stop
+                        # than 175m, so we want to the delay that represents the bus being the closest
+                        # to the bus stop.
+                        if delay is not None and delay < 100000 and bs_data in found_bus_stops:
+                            temp = found_bus_stops[bs_data]
+                            if abs(delay) < abs(temp):
                                 found_bus_stops[bs_data] = delay
-                                # Updating vectors and time.
+                            elif abs(delay) == abs(temp):
+                                found_bus_stops[bs_data] = max(delay, temp)
+                        elif delay is not None and delay < 100000:
+                            found_bus_stops[bs_data] = delay
+            # Updating vectors and time.
             loc_c.longitude = loc_c.longitude + diff_x
             loc_c.latitude = loc_c.latitude + diff_y
             local_time_data += time_diff
@@ -345,8 +342,8 @@ class DataAnalyzer:
                 for i in range(len(self.__bus_data[bus_nr][vehicle_nr]) - 1):
                     curr_bus_data = self.__bus_data[bus_nr][vehicle_nr][i]
                     next_bus_data = self.__bus_data[bus_nr][vehicle_nr][i + 1]
-                    found_bus_stops = self.bus_stops_in_one_sample(curr_bus_data,
-                                                                   next_bus_data)
+                    found_bus_stops = self.__bus_stops_in_one_sample(curr_bus_data,
+                                                                     next_bus_data)
                     if bus_nr not in calculated_buses:
                         calculated_buses[bus_nr] = {}
                     if vehicle_nr not in calculated_buses[bus_nr]:
