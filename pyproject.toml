@@ -7,19 +7,20 @@ build-backend = "hatchling.build"
 
 [project]
 name = "warsawbuspy"
-version = "0.0.5"
+version = "1.0.0"
 authors = [
   { name="Gustaw Blachowski", email="gustaw.blachowski@gmail.com" },
 ]
 description = "A package containing a functionality of readint the data from the https://api.um.warszawa.pl, analyzing it and displaying results of the analyzis."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["pandas", "matplotlib", "requests", "datetime"]
+dependencies = ["pandas => 2.2.0", "geopandas >= 0.14.3", "matplotlib >= 3.8.2",
+                "requests >= 2.31.0", "DateTime >= 5.4"]
 
 [project.urls]
 Homepage = "https://github.com/GustawB/BUS_DATA_READER"

@@ -165,7 +165,7 @@ class BusStop:
         return self.__post
 
     @property
-    def direction(self) ->str:
+    def direction(self) -> str:
         return self.__direction
 
     @property
@@ -236,7 +236,7 @@ class BusScheduleEntry:
     def direction(self) -> str:
         return self.__direction
 
-    @ property
+    @property
     def route(self) -> str:
         return self.__route
 

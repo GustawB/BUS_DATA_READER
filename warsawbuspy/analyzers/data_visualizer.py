@@ -1,10 +1,6 @@
-import os.path
-
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import requests
-import json
 
 
 # Class responsible for displaying the results of the data analysis.
