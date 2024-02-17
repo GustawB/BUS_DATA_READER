@@ -44,6 +44,6 @@ class DataVisualizer:
         warsaw_map = gpd.read_file('warsaw_map.geojson')
         base = warsaw_map.plot(color='green', edgecolor='black')
         locations_data = gpd.read_file(ovespeed_locations)
-        locations_data.plot(ax=base, color='red', markersize=15)
+        locations_data.plot(ax=base, color='red', markersize=5)
         plt.title(title)
         plt.show()

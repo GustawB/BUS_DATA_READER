@@ -11,7 +11,7 @@ class DataAnalyzer:
                  '__nr_of_all_busses_for_ovespeed_points', '__overspeed_percentages', '__times_for_stops',
                  '__nr_of_buses_for_stops', '__avg_times_for_stops', '__schedules', '__overspeeds_json',
                  '__nr_of_invalid_speeds', '__nr_of_invalid_times',
-                 '__nr_of_non_existing_schedules', '__nr_of_unread_buses')
+                 '__nr_of_non_existing_schedules', '__nr_of_unread_buses', '__unread_stops')
 
     def __init__(self):
         self.__bus_data = {}
@@ -24,6 +24,7 @@ class DataAnalyzer:
         self.__nr_of_buses_for_stops = {}
         self.__avg_times_for_stops = {}
         self.__schedules = {}
+        self.__unread_stops = {}
         self.__overspeeds_json = {
             "type": "FeatureCollection",
             "features": []}
@@ -88,6 +89,10 @@ class DataAnalyzer:
     @property
     def nr_of_unread_buses(self):
         return self.__nr_of_unread_buses
+
+    @property
+    def overspeeds_json(self):
+        return self.__overspeeds_json
 
     # Function that reads the bus schedules data from the given directory.
     def read_schedules_data(self, dir_with_schedules):
@@ -204,6 +209,14 @@ class DataAnalyzer:
                     nr_of_busses_overspeeding = nr_of_busses_overspeeding + 1
         return nr_of_busses_overspeeding
 
+    # Function that dumps the locations of the overspeeds into the given .geojson file.
+    # This operation clears the data in __overspeed_json.
+    def dump_overspeed_locations(self, file_to_dump_locations):
+        with open(file_to_dump_locations, 'w') as geojson_file:
+            data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
+            geojson_file.write(data_to_dump)
+        self.__overspeeds_json.clear()
+
     # Utility function that updates variables related to the number of tested locations.
     def __points_with_no_overspeeds(self, bus):
         if bus.location.street_name in self.__nr_of_all_busses_for_ovespeed_points:
@@ -247,11 +260,10 @@ class DataAnalyzer:
             self.__overspeed_percentages[key] = (float(self.__points_of_overspeed[key]) /
                                                  float(self.__nr_of_all_busses_for_ovespeed_points[key]))
 
-    # Function that dumps overspeed percentages data into the given .csv file, and locations of those
-    # incidents into the .geojson file.
-    # This operation deletes data in __overspeed_percentages, __points_of_overspeed, __ovespeeds_json
+    # Function that dumps overspeed percentages data into the given .csv file.
+    # This operation deletes data in __overspeed_percentages, __points_of_overspeed
     # and __nr_of_all_busses_for_ovespeed_points.
-    def dump_overspeed_percentages(self, file_to_dump_percentages, file_to_dump_locations):
+    def dump_overspeed_percentages(self, file_to_dump_percentages):
         data_headers = ['Street_name', 'Percentage']
         with open(file_to_dump_percentages, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -259,13 +271,9 @@ class DataAnalyzer:
             for data in sorted(self.__overspeed_percentages, key=self.__overspeed_percentages.get, reverse=True):
                 data_list = [str(data), str(self.__overspeed_percentages[data] * 100)]
                 csv_writer.writerow(data_list)
-        with open(file_to_dump_locations, 'w') as geojson_file:
-            data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
-            geojson_file.write(data_to_dump)
         self.__overspeed_percentages.clear()
         self.__points_of_overspeed.clear()
         self.__nr_of_all_busses_for_ovespeed_points.clear()
-        self.__overspeeds_json.clear()
 
     # Function that finds the delay for the given bus on the given stop.
     def __calc_time_difference(self, bus_line, bus_brigade, bus_time, bs_data, route_code):
@@ -310,23 +318,34 @@ class DataAnalyzer:
                 break
             for route_code in self.__bus_routes_data[next_bus.line]:
                 for bre in self.__bus_routes_data[next_bus.line][route_code]:
-                    bs_data = self.__bus_stop_data[bre.team_nr][bre.bus_stop_nr]
-                    # Locations are equal, if the distance between them is <= 175 meters.
-                    if loc_c == bs_data.location:
-                        delay = self.__calc_time_difference(next_bus.line, next_bus.brigade,
-                                                            local_time_data, bs_data, route_code)
-                        # Finding the smallest abs(delay), because a bus could stand on lights
-                        # before arriving to the stop, and those lights could be closer to the bus stop
-                        # than 175m, so we want to the delay that represents the bus being the closest
-                        # to the bus stop.
-                        if delay is not None and delay < 100000 and bs_data in found_bus_stops:
-                            temp = found_bus_stops[bs_data]
-                            if abs(delay) < abs(temp):
+                    # Sometimes API doesn't send some data (in this case bus stop data),
+                    # so here I'm handling bus stops that weren't sent by the API.
+                    if (bre.team_nr not in self.__unread_stops or bre.bus_stop_nr
+                            not in self.__unread_stops[bre.team_nr]):
+                        try:
+                            bs_data = self.__bus_stop_data[bre.team_nr][bre.bus_stop_nr]
+                        except KeyError:
+                            if bre.team_nr in self.__unread_stops:
+                                self.__unread_stops[bre.team_nr].append(bre.bus_stop_nr)
+                            else:
+                                self.__unread_stops[bre.team_nr] = [bre.bus_stop_nr]
+                            continue
+                        # Locations are equal, if the distance between them is <= 175 meters.
+                        if loc_c == bs_data.location:
+                            delay = self.__calc_time_difference(next_bus.line, next_bus.brigade,
+                                                                local_time_data, bs_data, route_code)
+                            # Finding the smallest abs(delay), because a bus could stand on lights
+                            # before arriving to the stop, and those lights could be closer to the bus stop
+                            # than 175m, so we want to the delay that represents the bus being the closest
+                            # to the bus stop.
+                            if delay is not None and delay < 100000 and bs_data in found_bus_stops:
+                                temp = found_bus_stops[bs_data]
+                                if abs(delay) < abs(temp):
+                                    found_bus_stops[bs_data] = delay
+                                elif abs(delay) == abs(temp):
+                                    found_bus_stops[bs_data] = max(delay, temp)
+                            elif delay is not None and delay < 100000:
                                 found_bus_stops[bs_data] = delay
-                            elif abs(delay) == abs(temp):
-                                found_bus_stops[bs_data] = max(delay, temp)
-                        elif delay is not None and delay < 100000:
-                            found_bus_stops[bs_data] = delay
             # Updating vectors and time.
             loc_c.longitude = loc_c.longitude + diff_x
             loc_c.latitude = loc_c.latitude + diff_y
@@ -362,7 +381,7 @@ class DataAnalyzer:
                                 # the sum of all delays.
                                 self.__times_for_stops[key] -= (
                                     calculated_buses)[bus_nr][vehicle_nr][next_bus_data.brigade][key]
-                                self.__times_for_stops += found_bus_stops[key]
+                                self.__times_for_stops[key] += found_bus_stops[key]
                                 calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade][key] = found_bus_stops[key]
                         else:
                             calculated_buses[bus_nr][vehicle_nr][next_bus_data.brigade][key] = found_bus_stops[key]
@@ -373,10 +392,8 @@ class DataAnalyzer:
                                 self.__times_for_stops[key] = found_bus_stops[key]
                                 self.__nr_of_buses_for_stops[key] = 1
 
-    # Function that calculates avg delays for every bus stop and then dumps this data
-    # into the given file. Every bus stop gets assigned a key build from
-    # its team name and post number.
-    def calc_average_delays(self, file_to_dump, upper_limit=-1, lower_limit=1):
+    # Function that calculates avg delays for every bus stop.
+    def calc_average_delays(self):
         for key in self.__nr_of_buses_for_stops:
             new_key = key.team_name + '_' + key.post
             self.__avg_times_for_stops[new_key] = (float(self.__times_for_stops[key]) /
@@ -415,7 +432,8 @@ class DataAnalyzer:
         self.__nr_of_buses_for_stops.clear()
 
     # Function that dumps the data associated with data errors from the API
-    # into the given file.
+    # into the given file. This operation clears all the data related to the
+    # invalid stats.
     def dump_invalid_data_stats(self, file_to_dump):
         data_headers = ['Error_type', 'nr_of_entries']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
@@ -427,5 +445,15 @@ class DataAnalyzer:
             csv_writer.writerow(data_list)
             data_list = ['unread_busses', str(self.__nr_of_unread_buses)]
             csv_writer.writerow(data_list)
-            data_list = ['non_existing___schedules', str(self.__nr_of_non_existing_schedules)]
+            data_list = ['non_existing_schedules', str(self.__nr_of_non_existing_schedules)]
             csv_writer.writerow(data_list)
+            nr_of_stops = 0
+            for key in self.__unread_stops:
+                nr_of_stops += len(self.__unread_stops[key])
+            data_list = ['unreceived_bus_stops', nr_of_stops]
+            csv_writer.writerow(data_list)
+        self.__nr_of_invalid_speeds = 0
+        self.__nr_of_invalid_times = 0
+        self.__nr_of_unread_buses = 0
+        self.__nr_of_non_existing_schedules = 0
+        self.__unread_stops.clear()
