@@ -6,7 +6,7 @@ import os
 import requests
 
 from warsawbuspy.holders.data_holders import ZTMBus, BusStop, BusForStop, BusScheduleEntry, BusRouteEntry
-from warsawbuspy.utility.data_utility import time_parser, assert_file_extension
+from warsawbuspy.utility.data_utility import time_parser, assert_file_extension, is_location_valid
 
 
 # Class responsible for fetching the data from the https://api.um.warszawa.pl.
@@ -59,11 +59,13 @@ class DataReader:
                 # Those are replacement buses, and there are problems with them
                 # not having schedules or routes or etc., and there are only four of them, so I ignore them.
                 if helper['Lines'][0] != 'Z':
+                    bus = None
                     # API sometimes sends some crazy times (eg. 131:20), so I'm just skipping them here.
                     try:
-                        time_data = time_parser(helper['Time'])
-                        bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
-                                     helper['Brigade'], time_data)
+                        if is_location_valid(helper['Lon'], helper['Lat']):
+                            time_data = time_parser(helper['Time'])
+                            bus = ZTMBus(helper['Lines'], helper['Lon'], helper['Lat'], helper['VehicleNumber'],
+                                         helper['Brigade'], time_data)
                     except KeyError:
                         continue
                     if 0 < time_offset < abs(bus.time_data - time_in_sec):
@@ -98,13 +100,14 @@ class DataReader:
             response = requests.get(
                 'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
         for data in response.json()['result']:
-            bs = BusStop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
-                         data['values'][1]['value'], data['values'][6]['value'],
-                         float(data['values'][5]['value']), float(data['values'][4]['value']))
-            if bs.team_name in self.__bus_stop_data:
-                self.__bus_stop_data[bs.team_name].append(bs)
-            else:
-                self.__bus_stop_data[bs.team_name] = [bs]
+            if is_location_valid(float(data['values'][5]['value']), float(data['values'][4]['value'])):
+                bs = BusStop(data['values'][2]['value'], data['values'][3]['value'], data['values'][0]['value'],
+                             data['values'][1]['value'], data['values'][6]['value'],
+                             float(data['values'][5]['value']), float(data['values'][4]['value']))
+                if bs.team_name in self.__bus_stop_data:
+                    self.__bus_stop_data[bs.team_name].append(bs)
+                else:
+                    self.__bus_stop_data[bs.team_name] = [bs]
 
     # Function that stores data about bus stops into the given file. This operation clears all data
     # in the __bus_stop_data dict.

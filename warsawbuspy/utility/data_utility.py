@@ -10,9 +10,14 @@ def time_parser(time_data: str) -> str:
 
 
 # Function used to check if the passed file_name has the valid extention.
-def assert_file_extension(file_name, extension):
+def assert_file_extension(file_name: str, extension: str) -> None:
     if len(file_name) <= len(extension):
         raise InvalidFileExtensionException(extension)
     if file_name[len(file_name) - len(extension):] != extension:
         raise InvalidFileExtensionException(extension)
 
+
+# Function to check if the given coordinates are valid.
+def is_location_valid(longitude: float, latitude: float) -> bool:
+    return (-180.0 <= longitude <= 180.0 and
+            -90.0 <= latitude <= 90.0)
