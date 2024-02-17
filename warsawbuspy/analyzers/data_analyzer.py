@@ -33,67 +33,63 @@ class DataAnalyzer:
         self.__nr_of_unread_buses = 0
 
     @property
-    def bus_data(self):
+    def bus_data(self) -> dict:
         return self.__bus_data
 
     @property
-    def bus_stop_data(self):
+    def bus_stop_data(self) -> dict:
         return self.__bus_stop_data
 
     @property
-    def bus_routes_data(self):
+    def bus_routes_data(self) -> dict:
         return self.__bus_routes_data
 
     @property
-    def points_of_overspeed(self):
+    def points_of_overspeed(self) -> dict:
         return self.__points_of_overspeed
 
     @property
-    def nr_of_all_busses_for_ovespeed_points(self):
+    def nr_of_all_busses_for_ovespeed_points(self) -> dict:
         return self.__nr_of_all_busses_for_ovespeed_points
 
     @property
-    def overspeed_percentages(self):
+    def overspeed_percentages(self) -> dict:
         return self.__overspeed_percentages
 
     @property
-    def times_for_stops(self):
+    def times_for_stops(self) -> dict:
         return self.__times_for_stops
 
     @property
-    def nr_of_buses_for_stops(self):
+    def nr_of_buses_for_stops(self) -> dict:
         return self.__nr_of_buses_for_stops
 
     @property
-    def avg_times_for_stops(self):
+    def avg_times_for_stops(self) -> dict:
         return self.__avg_times_for_stops
 
     @property
-    def schedules(self):
+    def schedules(self) -> dict:
         return self.__schedules
 
     @property
-    def nr_of_invalid_speeds(self):
+    def nr_of_invalid_speeds(self) -> int:
         return self.__nr_of_invalid_speeds
 
     @property
-    def nr_of_invalid_times(self):
+    def nr_of_invalid_times(self) -> int:
         return self.__nr_of_invalid_times
 
     @property
-    def nr_of_non_existing___schedules(self):
-        return self.__nr_of_non_existing_schedules
-
-    @property
-    def nr_of_unread_buses(self):
+    def nr_of_unread_buses(self) -> int:
         return self.__nr_of_unread_buses
 
     @property
-    def overspeeds_json(self):
+    def overspeeds_json(self) -> dict:
         return self.__overspeeds_json
 
     # Function that reads the bus schedules data from the given directory.
-    def read_schedules_data(self, dir_with_schedules):
+    def read_schedules_data(self, dir_with_schedules: str) -> None:
         dir_length = len(dir_with_schedules)
         with os.scandir(dir_with_schedules) as it:
             for entry in it:
@@ -116,7 +112,7 @@ class DataAnalyzer:
                         nr_of_lines += 1
 
     # Function that reads the bus data from the given file.
-    def read_bus_data(self, bus_filename):
+    def read_bus_data(self, bus_filename: str) -> None:
         with open(bus_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -136,7 +132,7 @@ class DataAnalyzer:
                         self.__bus_data[row[0]] = {row[4]: [bus]}
 
     # Function that reads the bus stop data from the given file.
-    def read_bus_stop_data(self, bus_stop_filename):
+    def read_bus_stop_data(self, bus_stop_filename: str) -> None:
         with open(bus_stop_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -149,7 +145,7 @@ class DataAnalyzer:
                     self.__bus_stop_data[bs.team][bs.post] = bs
 
     # Function that reads the bus routes data from the given file.
-    def read_bus_routes_data(self, bus_routes_filename):
+    def read_bus_routes_data(self, bus_routes_filename: str) -> None:
         with open(bus_routes_filename, 'r', encoding='utf16') as file:
             reader = csv.reader(file)
             nr_of_lines = 0
@@ -166,7 +162,7 @@ class DataAnalyzer:
     # Function that checks if the speed of a bus is valid (is not negative or isn't greater than 120 km/h,
     # because buses shouldn't be able to reach speed like that in the city area). Also, it checks if the bus
     # didn't send the same information twice by comparing the times of sending the info.
-    def __normalise_avg_speed(self, dist, prev_bus, next_bus):
+    def __normalise_avg_speed(self, dist: float, prev_bus: ZTMBus, next_bus: ZTMBus) -> float:
         local_length = next_bus.time_data - prev_bus.time_data
         if local_length <= 0:
             self.__nr_of_invalid_times += 1
@@ -179,7 +175,7 @@ class DataAnalyzer:
 
     # Function that returns the number of busses that were overspeeding at least once
     # during the period of data sampling, and collects every location at which any bus was ovespeeding.
-    def calc_nr_of_overspeeding_busses(self):
+    def calc_nr_of_overspeeding_busses(self) -> int:
         self.__nr_of_invalid_times = 0
         nr_of_busses_overspeeding = 0
         for bus_line in self.__bus_data:
@@ -209,14 +205,14 @@ class DataAnalyzer:
 
     # Function that dumps the locations of the overspeeds into the given .geojson file.
     # This operation clears the data in __overspeed_json.
-    def dump_overspeed_locations(self, file_to_dump_locations):
+    def dump_overspeed_locations(self, file_to_dump_locations: str) -> None:
         with open(file_to_dump_locations, 'w') as geojson_file:
             data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
             geojson_file.write(data_to_dump)
         self.__overspeeds_json.clear()
 
     # Utility function that updates variables related to the number of tested locations.
-    def __points_with_no_overspeeds(self, bus):
+    def __points_with_no_overspeeds(self, bus: ZTMBus) -> None:
         if bus.location.street_name in self.__nr_of_all_busses_for_ovespeed_points:
             self.__nr_of_all_busses_for_ovespeed_points[bus.location.street_name] += 1
         else:
@@ -224,7 +220,7 @@ class DataAnalyzer:
 
     # Utility function that updates variables related to the nr of all tested locations as well as those
     # which are points where buses are ovespeeding.
-    def __points_with_overspeeds(self, bus):
+    def __points_with_overspeeds(self, bus: ZTMBus) -> None:
         if bus.location.street_name in self.__points_of_overspeed:
             self.__points_of_overspeed[bus.location.street_name] += 1
         else:
@@ -234,11 +230,9 @@ class DataAnalyzer:
     # Function that finds every street for which at least one bus was overspeeding,
     # and then for each one of them it finds the nr of those buses, as well as the nr of
     # all buses that were going through it.
-    def __calc_data_for_overspeed_percentages(self):
+    def __calc_data_for_overspeed_percentages(self) -> None:
         self.__nr_of_invalid_times = 0
-        iterator = 0
         for bus_nr in self.__bus_data:
-            iterator += 1
             for vehicle_nr in self.__bus_data[bus_nr]:
                 for i in range(len(self.__bus_data[bus_nr][vehicle_nr]) - 1):
                     dist = self.__bus_data[bus_nr][vehicle_nr][i + 1].location.distance(
@@ -252,7 +246,7 @@ class DataAnalyzer:
 
     # Function that calculates the percentage of ovespeeding buses for every
     # registered location (location where at least one bus was overspeeding).
-    def calc_overspeed_percentages(self):
+    def calc_overspeed_percentages(self) -> None:
         self.__calc_data_for_overspeed_percentages()
         for key in self.__points_of_overspeed:
             self.__overspeed_percentages[key] = (float(self.__points_of_overspeed[key]) /
@@ -261,7 +255,7 @@ class DataAnalyzer:
     # Function that dumps overspeed percentages data into the given .csv file.
     # This operation deletes data in __overspeed_percentages, __points_of_overspeed
     # and __nr_of_all_busses_for_ovespeed_points.
-    def dump_overspeed_percentages(self, file_to_dump_percentages):
+    def dump_overspeed_percentages(self, file_to_dump_percentages: str) -> None:
         data_headers = ['Street_name', 'Percentage']
         with open(file_to_dump_percentages, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -274,7 +268,8 @@ class DataAnalyzer:
         self.__nr_of_all_busses_for_ovespeed_points.clear()
 
     # Function that finds the delay for the given bus on the given stop.
-    def __calc_time_difference(self, bus_line, bus_brigade, bus_time, bs_data, route_code):
+    def __calc_time_difference(self, bus_line: str, bus_brigade: str, bus_time: int,
+                               bs_data: BusStop, route_code: str) -> int:
         min_diff = 100000
         try:
             for row in self.__schedules[bs_data.team][bs_data.post][bus_line]:
@@ -286,14 +281,14 @@ class DataAnalyzer:
                         min_diff = difference
         except KeyError:
             # API returns no data for some valid combinations. I'm skipping those.
-            return None
+            return 100000
         except ValueError:
-            return None
+            return 100000
         return min_diff
 
     # Function that finds delays for every bus stop that the given bus crossed between sample in
     # prev_bus and next_bus.
-    def __bus_stops_in_one_sample(self, prev_bus, next_bus):
+    def __bus_stops_in_one_sample(self, prev_bus: ZTMBus, next_bus: ZTMBus) -> dict:
         # If a bus travels with the speed of 90km/h for one minute, it will traverse 1500m.
         # So, below I'm splitting the distance that a bus completes by 9, and for each point on the
         # straight path between two points I'm looking for bus stops that it may have pass.
@@ -335,13 +330,13 @@ class DataAnalyzer:
                             # before arriving to the stop, and those lights could be closer to the bus stop
                             # than 175m, so we want to the delay that represents the bus being the closest
                             # to the bus stop.
-                            if delay is not None and delay < 100000 and bs_data in found_bus_stops:
+                            if delay < 100000 and bs_data in found_bus_stops:
                                 temp = found_bus_stops[bs_data]
                                 if abs(delay) < abs(temp):
                                     found_bus_stops[bs_data] = delay
                                 elif abs(delay) == abs(temp):
                                     found_bus_stops[bs_data] = max(delay, temp)
-                            elif delay is not None and delay < 100000:
+                            elif delay < 100000:
                                 found_bus_stops[bs_data] = delay
             # Updating vectors and time.
             loc_c.longitude = loc_c.longitude + diff_x
@@ -351,7 +346,7 @@ class DataAnalyzer:
 
     # Function that finds the sum of all delays for every bus stop as well as the number of busses
     # that arrived fo every bus stop.
-    def calc_bus_stops_statistics(self):
+    def calc_bus_stops_statistics(self) -> None:
         calculated_buses = {}
         for bus_nr in self.__bus_data:
             for vehicle_nr in self.__bus_data[bus_nr]:
@@ -390,7 +385,7 @@ class DataAnalyzer:
                                 self.__nr_of_buses_for_stops[key] = 1
 
     # Function that calculates avg delays for every bus stop.
-    def calc_average_delays(self):
+    def calc_average_delays(self) -> None:
         for key in self.__nr_of_buses_for_stops:
             new_key = key.team_name + '_' + key.post
             self.__avg_times_for_stops[new_key] = (float(self.__times_for_stops[key]) /
@@ -399,7 +394,7 @@ class DataAnalyzer:
     # Function that dumps average delays data into the given file, but only as long as the
     # calculated data is between upper limits and lower limits (as long as they were
     # set by the user). This operation deletes data in __avg_times_for_stops and __times_for_stops.
-    def dump_average_delays(self, file_to_dump, upper_limit=-1, lower_limit=1):
+    def dump_average_delays(self, file_to_dump: str, upper_limit: float = -1, lower_limit: float = 1) -> None:
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             data_headers = ['Bus_stop', 'Avg_time']
             csv_writer = csv.writer(file)
@@ -418,7 +413,7 @@ class DataAnalyzer:
     # Function that dumps the information about the number of buses that reached every bus stop
     # in the given .csv file stamp into the given file. This operation clears data in
     # __nr_of_buses_for_stops.
-    def dump_nr_of_buses_for_each_stop(self, file_to_dump):
+    def dump_nr_of_buses_for_each_stop(self, file_to_dump: str) -> None:
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             data_headers = ['Bus_stop', 'Nr_of_buses']
             csv_writer = csv.writer(file)
@@ -431,7 +426,7 @@ class DataAnalyzer:
     # Function that dumps the data associated with data errors from the API
     # into the given file. This operation clears all the data related to the
     # invalid stats.
-    def dump_invalid_data_stats(self, file_to_dump):
+    def dump_invalid_data_stats(self, file_to_dump: str) -> None:
         data_headers = ['Error_type', 'nr_of_entries']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)

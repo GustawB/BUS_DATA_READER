@@ -21,30 +21,30 @@ class Location:
         return not (self == other)
 
     def __hash__(self):
-        return hash((self.latitude, self.latitude))
+        return hash((self.longitude, self.latitude))
 
     @property
-    def longitude(self):
+    def longitude(self) -> float:
         return self.__longitude
 
     @longitude.setter
-    def longitude(self, new_value):
+    def longitude(self, new_value: float) -> None:
         self.__longitude = new_value
 
     @property
-    def latitude(self):
+    def latitude(self) -> float:
         return self.__latitude
 
     @latitude.setter
-    def latitude(self, new_value):
+    def latitude(self, new_value: float) -> None:
         self.__latitude = new_value
 
     @property
-    def street_name(self):
+    def street_name(self) -> str:
         return self.__street_name
 
     # Function that calculates the distance between this location and the given one.
-    def distance(self, other):
+    def distance(self, other) -> float:
         r = 6371  # km
         p = pi / 180
         a = (0.5 - cos((other.longitude - self.__longitude) * p) / 2 + cos(self.__longitude * p) * cos(
@@ -54,7 +54,7 @@ class Location:
 
     # By default, the street name is empty. But, if user calls for it, find_street() will
     # fetch the location's data from the services.gugik.gov.pl API to extract the street name.
-    def find_street(self):
+    def find_street(self) -> None:
         if self.street_name == '':
             response = requests.post(
                 'https://services.gugik.gov.pl/uug/?request=GetAddressReverse&location=POINT('
@@ -68,7 +68,7 @@ class Location:
                 self.__street_name = 'Unknown_location'
 
     # Converts class fields into the list.
-    def to_csv(self):
+    def to_csv(self) -> list:
         result = [self.longitude, self.latitude, self.street_name]
         return result
 
@@ -100,27 +100,27 @@ class ZTMBus:
                 self.time_data == other.time_data)
 
     @property
-    def line(self):
+    def line(self) -> str:
         return self.__line
 
     @property
-    def location(self):
+    def location(self) -> Location:
         return self.__location
 
     @property
-    def vehicle_number(self):
+    def vehicle_number(self) -> str:
         return self.__vehicle_number
 
     @property
-    def brigade(self):
+    def brigade(self) -> str:
         return self.__brigade
 
     @property
-    def time_data(self):
+    def time_data(self) -> int:
         return self.__time_data
 
     # Converts class fields into the list.
-    def to_csv(self):
+    def to_csv(self) -> list:
         result = [self.line] + self.location.to_csv() + [self.vehicle_number, self.brigade, self.time_data]
         return result
 
@@ -149,31 +149,31 @@ class BusStop:
                      self.post, self.direction, self.location))
 
     @property
-    def team_name(self):
+    def team_name(self) -> str:
         return self.__team_name
 
     @property
-    def street_id(self):
+    def street_id(self) -> str:
         return self.__street_id
 
     @property
-    def team(self):
+    def team(self) -> str:
         return self.__team
 
     @property
-    def post(self):
+    def post(self) -> str:
         return self.__post
 
     @property
-    def direction(self):
+    def direction(self) ->str:
         return self.__direction
 
     @property
-    def location(self):
+    def location(self) -> Location:
         return self.__location
 
     # Converts class fields into the list.
-    def to_csv(self):
+    def to_csv(self) -> list:
         result = [self.team_name, self.street_id, self.team, self.post, self.direction] + self.location.to_csv()
         return result
 
@@ -192,19 +192,19 @@ class BusForStop:
                 self.bus == other.bus)
 
     @property
-    def team(self):
+    def team(self) -> str:
         return self.__team
 
     @property
-    def post(self):
+    def post(self) -> str:
         return self.__post
 
     @property
-    def bus(self):
+    def bus(self) -> str:
         return self.__bus
 
     # Converts class fields into the list.
-    def to_csv(self):
+    def to_csv(self) -> list:
         result = [self.team, self.post, self.bus]
         return result
 
@@ -229,23 +229,23 @@ class BusScheduleEntry:
                 self.time_data == other.time_data)
 
     @property
-    def brigade(self):
+    def brigade(self) -> str:
         return self.__brigade
 
     @property
-    def direction(self):
+    def direction(self) -> str:
         return self.__direction
 
     @ property
-    def route(self):
+    def route(self) -> str:
         return self.__route
 
     @property
-    def time_data(self):
+    def time_data(self) -> int:
         return self.__time_data
 
     # Converts class fields into the list.
-    def to_csv(self):
+    def to_csv(self) -> list:
         result = [self.brigade, self.direction, self.route, self.time_data]
         return result
 
@@ -270,30 +270,30 @@ class BusRouteEntry:
                 self.bus_stop_nr == other.bus_stop_nr)
 
     @property
-    def bus_nr(self):
+    def bus_nr(self) -> str:
         return self.__bus_nr
 
     @property
-    def route_code(self):
+    def route_code(self) -> str:
         return self.__route_code
 
     @property
-    def street_id(self):
+    def street_id(self) -> str:
         return self.__street_id
 
     @property
-    def team_nr(self):
+    def team_nr(self) -> str:
         return self.__team_nr
 
     @property
-    def type(self):
+    def type(self) -> str:
         return self.__type
 
     @property
-    def bus_stop_nr(self):
+    def bus_stop_nr(self) -> str:
         return self.__bus_stop_nr
 
     # Converts class fields into the list.
-    def to_csv(self):
+    def to_csv(self) -> list:
         result = [self.bus_nr, self.route_code, self.street_id, self.team_nr, self.type, self.bus_stop_nr]
         return result

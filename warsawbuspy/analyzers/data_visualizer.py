@@ -15,8 +15,8 @@ class DataVisualizer:
     # will represent the X axis of the chart, and the second one will represent the Y axis of the chart, but the
     # user can change that by specifying the x_axis_index and y_axis_index params (0 and 1 by default).
     @staticmethod
-    def draw_data_chart(data_file_name, bar_name, first_data_to_draw, size_of_data_to_draw, x_axis_index=0,
-                        y_axis_index=1):
+    def draw_data_chart(data_file_name: str, bar_name: str, first_data_to_draw: int,
+                        size_of_data_to_draw: int, x_axis_index: int = 0, y_axis_index: int = 1) -> None:
         data = pd.read_csv(data_file_name, encoding='utf-16')
         data_headers = list(data.columns)
         data = data[first_data_to_draw:first_data_to_draw + size_of_data_to_draw]
@@ -32,7 +32,7 @@ class DataVisualizer:
     # Function that draws the locations of the ovespeeding incidents on the maps stored inside 'maps' dir
     # (if fetched by DataReader).
     @staticmethod
-    def draw_overspeed_map(ovespeed_locations, title):
+    def draw_overspeed_map(ovespeed_locations: str, title: str) -> None:
         maps_names = ['powiat Warszawa', 'powiat pruszkowski', 'powiat piaseczyński', 'powiat otwocki',
                       'powiat miński', 'powiat wołomiński', 'powiat legionowski', 'powiat warszawski zachodni',
                       'powiat nowodworski']

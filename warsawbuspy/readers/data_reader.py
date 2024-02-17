@@ -21,35 +21,35 @@ class DataReader:
         self.__bus_routes = {}
 
     @property
-    def bus_data(self):
+    def bus_data(self) -> dict:
         return self.__bus_data
 
     @property
-    def bus_stop_data(self):
+    def bus_stop_data(self) -> dict:
         return self.__bus_stop_data
 
     @property
-    def buses_for_stops(self):
+    def buses_for_stops(self) -> dict:
         return self.__buses_for_stops
 
     @property
-    def schedules(self):
+    def schedules(self) -> dict:
         return self.__schedules
 
     @property
-    def bus_routes(self):
+    def bus_routes(self) -> dict:
         return self.__bus_routes
 
     # API sends times like 25:01:24 for schedules etc., so this function parses that back
     # into normal time format (for 25:00:00 it would be 01:00:00).
     @staticmethod
-    def time_parser(time_data):
+    def time_parser(time_data: str) -> str:
         if '24' <= time_data[:2] <= '29':
             time_data = '0' + str(int(time_data[:2]) % 24) + time_data[2:]
         return time_data
 
     # Function that retrieves data bout bus locations every 'sample_length' seconds 'nr_of_samples' times.
-    def get_bus_data(self, nr_of_samples, sample_length, time_offset=-1):
+    def get_bus_data(self, nr_of_samples: int, sample_length: int, time_offset: int = -1) -> None:
         url = ('https://api.um.warszawa.pl/api/action/busestrams_get/?resource_id= '
                'f2e5503e-927d-4ad3-9500-4ab9e55deb59&apikey=') + self.__api_key + '&type=1'
         time_data = datetime.datetime.now(datetime.timezone.utc)
@@ -85,7 +85,7 @@ class DataReader:
 
     # Function that stores all the gathered data about buses locations into the given file.
     # This operation clears all data in the __bus_data dict.
-    def dump_bus_data(self, file_to_dump):
+    def dump_bus_data(self, file_to_dump: str) -> None:
         data_headers = ['Lines', 'Longitude', 'Latitude', 'Street_name', 'VehicleNumber', 'Brigade', 'Time']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -97,7 +97,7 @@ class DataReader:
         self.__bus_data.clear()
 
     # Function that retrieves data about every bus stop in the city.
-    def get_stops_data(self):
+    def get_stops_data(self) -> None:
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/dbstore_get/?id=ab75c33d-3a26-4342-b36a-6e5fef0a3ac3&page=1')
         while response.status_code != 200:
@@ -114,7 +114,7 @@ class DataReader:
 
     # Function that stores data about bus stops into the given file. This operation clears all data
     # in the __bus_stop_data dict.
-    def dump_stops_data(self, file_to_dump):
+    def dump_stops_data(self, file_to_dump: str) -> None:
         data_headers = ['Team_name', 'Street_id', 'Team', 'Post', 'Direction', 'Longitude', 'Latitude']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -125,7 +125,7 @@ class DataReader:
         self.__bus_stop_data.clear()
 
     # Function that retrieves the information about every bus that goes through every bus stop.
-    def get_buses_for_stops(self, bus_stop_list_file):
+    def get_buses_for_stops(self, bus_stop_list_file: str) -> None:
         with open(bus_stop_list_file, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
             nr_of_lines = 0
@@ -152,7 +152,7 @@ class DataReader:
 
     # Function that stores data about bus numbers for every bus stop into the given file.
     # This operation clears every data in the __buses_for_stops dict.
-    def dump_buses_for_stops(self, file_to_dump):
+    def dump_buses_for_stops(self, file_to_dump: str) -> None:
         data_headers = ['Team', 'Post', 'Bus']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
@@ -165,7 +165,7 @@ class DataReader:
     # Function that retrieves the bus schedule for every existing combination of bus stop, bus post and bus nr.
     # Those combinations are available i __buses_for_stops_file
     # that should be created by get_buses_for_stops() function.
-    def get_bus_schedules(self, __buses_for_stops_file):
+    def get_bus_schedules(self, __buses_for_stops_file: str) -> None:
         with open(__buses_for_stops_file, 'r', encoding='utf16') as file:
             csv_reader = csv.reader(file)
             nr_of_lines = 0
@@ -202,7 +202,7 @@ class DataReader:
     # Function that dumps schedules into the given folder. Every schedule is stored in a file
     # with a name build from bus stop team, bus stop post and bus nr. This operation clears
     # every data in the __schedules dict.
-    def dump_schedules(self, folder_to_store_in):
+    def dump_schedules(self, folder_to_store_in: str) -> None:
         data_headers = ['Brigade', 'Direction', 'Route', 'Time']
         if not os.path.isdir(folder_to_store_in):
             os.mkdir(folder_to_store_in)
@@ -218,7 +218,7 @@ class DataReader:
         self.__schedules.clear()
 
     # Function that retrieves every available bus route.
-    def get_bus_routes(self):
+    def get_bus_routes(self) -> None:
         response = requests.get(
             'https://api.um.warszawa.pl/api/action/public_transport_routes/?apikey=' + self.__api_key)
         while response.status_code != 200:
@@ -245,7 +245,7 @@ class DataReader:
                                       helper['typ'], helper['nr_przystanku']))
 
     # Function that dumps bus routes into the given file. This operation clears all data in the __bus_routes dict.
-    def dump_bus_routes(self, file_to_dump):
+    def dump_bus_routes(self, file_to_dump: str) -> None:
         data_headers = ['Bus_nr', 'Route_code', 'Street_id', 'Stop_team_nr', 'Stop_type', 'Stop_nr']
         with open(file_to_dump, 'w', newline='', encoding='utf16') as file:
             csv_writer = csv.writer(file)
