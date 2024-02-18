@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "warsawbuspy"
-version = "1.0.2"
+version = "1.0.3"
 authors = [
   { name="Gustaw Blachowski", email="gustaw.blachowski@gmail.com" },
 ]
