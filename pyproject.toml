@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "warsawbuspy"
-version = "1.0.0"
+version = "1.0.2"
 authors = [
   { name="Gustaw Blachowski", email="gustaw.blachowski@gmail.com" },
 ]
@@ -20,7 +20,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = ["pandas>=2.2.0", "geopandas>=0.14.3", "matplotlib>=3.8.2",
-                "requests>=2.31.0", "DateTime>=5.4"]
+                "requests>=2.31.0", "datetime>=5.4"]
 
 [project.urls]
 Homepage = "https://github.com/GustawB/BUS_DATA_READER"
