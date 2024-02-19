@@ -459,7 +459,6 @@ class TestDataReaderClass:
             if not os.path.isdir('test_files'):
                 os.mkdir('test_files')
             dr.dump_bus_data('test_files/test_bus_data.csv')
-
     def test_bus_stop_data_reading(self, mock_bus_stop_data, expected_bus_stop):
         with patch('warsawbuspy.readers.data_reader.requests.get') as mock_get:
             mock_get.return_value = MagicMock(status_code=200)

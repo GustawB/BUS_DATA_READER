@@ -215,6 +215,9 @@ class DataAnalyzer:
             data_to_dump = json.dumps(self.__overspeeds_json, indent=4)
             geojson_file.write(data_to_dump)
         self.__overspeeds_json.clear()
+        self.__overspeeds_json = {
+            "type": "FeatureCollection",
+            "features": []}
 
     # Utility function that updates variables related to the number of tested locations.
     def __points_with_no_overspeeds(self, bus: ZTMBus) -> None:
